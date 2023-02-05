@@ -1,0 +1,38 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: C:\Users\brivio\Desktop\Interface.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+import FreeCAD
+import FreeCADGui
+import FemGui
+from femtools import ccxtools
+
+doc = App.ActiveDocument
+
+sheet = doc.getObject("Spreadsheet")
+sheet.set('Length', '6000mm')
+sheet.set('Width', '1000mm')
+sheet.set('Height', '1000mm')
+
+sheet.recompute()
+
+FreeCADGui.ActiveDocument.activeView().viewAxonometric()
+FreeCADGui.SendMsgToActiveView("ViewFit")
+
+doc.recompute()
+
+FemGui.setActiveAnalysis(doc.Analysis)
+
+fea = ccxtools.FemToolsCcx()
+fea.update_objects()
+fea.setup_working_dir()
+fea.setup_ccx()
+message = fea.check_prerequisites()
+if not message:
+    fea.purge_results()
+    fea.write_inp_file()
+    fea.ccx_run()
+    fea.load_results()
+else:
+    FreeCAD.Console.PrintError("Houston, we have a problem! {}\n".format(message))  # in report view
+    print("Houston, we have a problem! {}\n".format(message))  # in Python console
+
