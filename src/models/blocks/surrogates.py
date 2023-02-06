@@ -1,6 +1,6 @@
 from typing import Tuple
 
-from theeng.utilities.types import Surrogate
+from src.utilities.types import Surrogate
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.neural_network import MLPRegressor

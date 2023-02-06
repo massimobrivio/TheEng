@@ -1,7 +1,7 @@
 from typing import Iterable
 import unittest
-from theeng.blocks.surrogates import Polynomial
-from theeng.utilities.types import Parameter, Target, FeatureDefinition
+from src.blocks.surrogates import Polynomial
+from src.utilities.types import Parameter, Target, FeatureDefinition
 from pandas import DataFrame
 from numpy.random import randint
 

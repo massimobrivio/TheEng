@@ -1,9 +1,9 @@
-from theeng.interfaces.analytical_interface import AnalyticalInterface
+from src.interfaces.analytical_interface import AnalyticalInterface
 from funcs import objective
-from theeng.utilities.types import Parameter, Target
-from theeng.aidev import AiDev
-from theeng.utilities.types import FeatureDefinition
-from theeng.blocks.postprocessing import ScatterPlot, ParallelCoord
+from src.utilities.types import Parameter, Target
+from src.main import AiDev
+from src.utilities.types import FeatureDefinition
+from src.blocks.postprocessing import ScatterPlot, ParallelCoord
 from os.path import join
 from os import getcwd
 

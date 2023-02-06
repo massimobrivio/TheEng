@@ -1,4 +1,4 @@
-from theeng.utilities.types import Sampling, FeatureDefinition
+from src.utilities.types import Sampling, FeatureDefinition
 from numpy.random import uniform
 from scipy.stats import qmc
 from pandas import DataFrame

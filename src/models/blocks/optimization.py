@@ -1,5 +1,5 @@
 from typing import Callable, List, Union
-from theeng.utilities.types import Optimization
+from src.utilities.types import Optimization
 from pymoo.algorithms.moo.unsga3 import NSGA3
 from pymoo.algorithms.soo.nonconvex.ga import GA
 from pymoo.algorithms.soo.nonconvex.nelder import NelderMead

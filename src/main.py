@@ -7,16 +7,16 @@ from joblib import dump, load
 
 from pandas import DataFrame
 
-from theeng.blocks.data import Data
-from theeng.blocks.optimization import (
+from src.blocks.data import Data
+from src.blocks.optimization import (
     NSGA_III,
     ParticleSwarm,
     GeneticAlgorithm,
     NelderMeadSearch,
 )
-from theeng.blocks.postprocessing import Decision
-from theeng.blocks.sampling import Latin, Random
-from theeng.blocks.surrogates import (
+from src.blocks.postprocessing import Decision
+from src.blocks.sampling import Latin, Random
+from src.blocks.surrogates import (
     Kriging,
     NeuralNetwork,
     Polynomial,
@@ -25,7 +25,7 @@ from theeng.blocks.surrogates import (
 )
 from pymoo.operators.sampling.rnd import FloatRandomSampling
 from pymoo.core.population import Population
-from theeng.utilities.types import FeatureDefinition
+from src.utilities.types import FeatureDefinition
 
 
 class AiDev:

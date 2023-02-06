@@ -1,7 +1,7 @@
 import unittest
 
-from theeng.utilities.types import Problem, Parameter, Target, FeatureDefinition
-from theeng.interfaces.analytical_interface import AnalyticalInterface
+from src.utilities.types import Problem, Parameter, Target, FeatureDefinition
+from src.interfaces.analytical_interface import AnalyticalInterface
 from numpy import array, subtract
 
 from problem_objective import objective_1, objective_2, objective_3

@@ -1,10 +1,10 @@
 from os import getcwd
 from os.path import join
 
-from theeng.aidev import AiDev
-from theeng.blocks.postprocessing import ParallelCoord, ScatterPlot, Convergence
-from theeng.interfaces.analytical_interface import AnalyticalInterface
-from theeng.utilities.types import FeatureDefinition, Parameter, Target
+from src.main import AiDev
+from src.blocks.postprocessing import ParallelCoord, ScatterPlot, Convergence
+from src.interfaces.analytical_interface import AnalyticalInterface
+from src.utilities.types import FeatureDefinition, Parameter, Target
 
 from funcs import objective
 

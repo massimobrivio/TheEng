@@ -3,10 +3,10 @@ from warnings import warn
 
 import mcdm
 import plotly.express as px
-from theeng.utilities.types import Visualization
+from src.utilities.types import Visualization
 from numpy import abs, where, array, multiply
 from numpy.linalg import norm as npnorm
-from theeng.utilities.types import FeatureDefinition
+from src.utilities.types import FeatureDefinition
 from pandas import DataFrame
 from plotly.graph_objects import Figure
 

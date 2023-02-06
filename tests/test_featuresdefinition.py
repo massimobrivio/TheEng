@@ -1,5 +1,5 @@
 import unittest
-from theeng.utilities.types import Parameter, Target, FeatureDefinition
+from src.utilities.types import Parameter, Target, FeatureDefinition
 
 
 class TestFeatureDefinition(unittest.TestCase):

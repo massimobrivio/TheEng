@@ -1,5 +1,5 @@
 import unittest
-from theeng.utilities.types import Parameter
+from src.utilities.types import Parameter
 
 
 class TestParameter(unittest.TestCase):

@@ -1,7 +1,7 @@
 import unittest
-from theeng.utilities.types import Parameter, Target, FeatureDefinition
-from theeng.interfaces.analytical_interface import AnalyticalInterface
-from theeng.blocks.optimization import NelderMeadSearch, NSGA_III
+from src.utilities.types import Parameter, Target, FeatureDefinition
+from src.interfaces.analytical_interface import AnalyticalInterface
+from src.blocks.optimization import NelderMeadSearch, NSGA_III
 from problem_objective import objective_4, objective_3
 from pandas import DataFrame
 from pymoo.core.population import Population

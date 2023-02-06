@@ -1,6 +1,6 @@
 import unittest
-from theeng.blocks.sampling import Latin
-from theeng.utilities.types import FeatureDefinition, Parameter, Target
+from src.blocks.sampling import Latin
+from src.utilities.types import FeatureDefinition, Parameter, Target
 
 
 class TestSampling(unittest.TestCase):

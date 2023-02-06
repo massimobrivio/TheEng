@@ -1,9 +1,9 @@
 import unittest
 
-from theeng.blocks.data import Data
-from theeng.blocks.surrogates import Polynomial
-from theeng.interfaces.analytical_interface import AnalyticalInterface
-from theeng.utilities.types import FeatureDefinition, Parameter, Target
+from src.blocks.data import Data
+from src.blocks.surrogates import Polynomial
+from src.interfaces.analytical_interface import AnalyticalInterface
+from src.utilities.types import FeatureDefinition, Parameter, Target
 from numpy.random import randint
 from pandas import DataFrame
 
