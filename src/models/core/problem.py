@@ -7,6 +7,7 @@ class ProblemConstructor:
 
     def __init__(self) -> None:
         """Initialize the ProblemConstructor class."""
+
         self._objectives = []
         self.objectives_expressions = []
         self._lower_bounds = []
@@ -14,6 +15,11 @@ class ProblemConstructor:
         self.bounds_expressions = []
         self._constraints = []
         self.constraints_expressions = []
+
+        self.nobj = 0
+        self.nconst = 0
+        self.nvar = 0
+        self.pnames = []
 
     def set_objectives(self, expressions: List[str]) -> None:
         """Set the objectives of the problem.
@@ -28,6 +34,7 @@ class ProblemConstructor:
                     operands, operations, results
                 )
             )
+            self.nobj += 1
         self.objectives_expressions = expressions
 
     def set_contraints(self, expressions: List[str]) -> None:
@@ -43,6 +50,7 @@ class ProblemConstructor:
                     operands, operations, results
                 )
             )
+            self.nconst += 1
         self.constraints_expressions = expressions
 
     def set_bounds(self, bounds: Dict[str, Tuple[float, float]]) -> None:
@@ -55,6 +63,8 @@ class ProblemConstructor:
             self._lower_bounds.append(value[0])
             self._upper_bounds.append(value[1])
             self.bounds_expressions.append(f"{value[0]} <= {key} <= {value[1]}")
+            self.nvar += 1
+            self.pnames.append(key)
 
     def get_objectives(self) -> List[Callable[(...), float]]:
         """Returns a list of callables to evaluate the objectives of the problem.

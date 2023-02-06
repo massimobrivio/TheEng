@@ -17,21 +17,22 @@ from femtools import ccxtools
 class FEModelEvaluator(Evaluator):
     def __init__(
         self,
-        parameters: Dict[str, float],
         results_request: List[str],
         path_to_fcd_file: str,
     ) -> None:
         """Initialize an FEM evaluator.
 
         Args:
-            parameters (Dict[str, float]): dictionary of design parameters containing aliases and values contained in the spreadsheet.
             results_request (List[str]): list of results aliases contained in the spreadsheet.
             path_to_fcd_file (str): path to the FreeCAD file containing the model.
         """
         super().__init__(parameters, results_request, path_to_fcd_file)
 
-    def evaluate(self) -> Dict[str, float]:
+    def evaluate(self, parameters: Dict[str, float]) -> Dict[str, float]:
         """Evaluate the design parameters and return the results by updating the spreadsheet and running the FEM analysis in FreeCAD.
+
+        Args:
+            parameters (Dict[str, float]): dictionary of design parameters containing aliases and values contained in the spreadsheet.
 
         Raises:
             Exception: _description_
@@ -42,7 +43,7 @@ class FEModelEvaluator(Evaluator):
         doc = FreeCAD.open(self.path_to_fcd_file)
         sheet = doc.getObject("Spreadsheet")
 
-        for key, value in self.parameters.items():
+        for key, value in parameters.items():
             sheet.set(key, str(value))
 
         doc.recompute()
@@ -71,7 +72,12 @@ class FEModelEvaluator(Evaluator):
 
 
 class CFDModelEvaluator(Evaluator):
-    def __init__(self, parameters: Dict[str, float], results_request: List[str], path_to_fcd_file: str) -> None:
+    def __init__(
+        self,
+        parameters: Dict[str, float],
+        results_request: List[str],
+        path_to_fcd_file: str,
+    ) -> None:
         super().__init__(parameters, results_request, path_to_fcd_file)
         raise NotImplementedError("CFDModelEvaluator is not implemented yet.")
 
