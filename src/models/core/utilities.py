@@ -35,7 +35,7 @@ def expression_parser(expression: str) -> Tuple[List[str], List[str]]:
 
 
 def expression_evaluator(
-    operands: List[str], operations: List[str], results: Dict[str, float]
+    results: Dict[str, float], operands: List[str], operations: List[str]
 ) -> float:
     """Evaluate an expression given its operands and operations.
 
@@ -58,7 +58,7 @@ def expression_evaluator(
         elif operand == "":
             operands_values.append(0)
         elif test_float(operand):
-            operands_values.append(operand)
+            operands_values.append(float(operand))
         else:
             raise ValueError(f"Unknown operand {operand}")
 
@@ -76,14 +76,16 @@ def expression_evaluator(
         "^": operator.pow,
     }
 
+    operations_copy = operations.copy()
+
     for op in operator_order:  # Loop over precedence levels
         while any(
-            o in operations for o in op
+            o in operations_copy for o in op
         ):  # Operator with this precedence level exists
             idx, oo = next(
-                (i, o) for i, o in enumerate(operations) if o in op
+                (i, o) for i, o in enumerate(operations_copy) if o in op
             )  # Next operator with this precedence
-            operations.pop(idx)  # remove this operator from the operator list
+            operations_copy.pop(idx)  # remove this operator from the operator list
             values = map(
                 float, operands_values[idx : idx + 2]
             )  # here I just assume float for everything
@@ -107,4 +109,3 @@ def test_float(x: str) -> bool:
         return True
     except ValueError:
         return False
-

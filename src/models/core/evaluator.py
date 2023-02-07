@@ -26,7 +26,7 @@ class FEModelEvaluator(Evaluator):
             results_request (List[str]): list of results aliases contained in the spreadsheet.
             path_to_fcd_file (str): path to the FreeCAD file containing the model.
         """
-        super().__init__(parameters, results_request, path_to_fcd_file)
+        super().__init__(results_request, path_to_fcd_file)
 
     def evaluate(self, parameters: Dict[str, float]) -> Dict[str, float]:
         """Evaluate the design parameters and return the results by updating the spreadsheet and running the FEM analysis in FreeCAD.
@@ -46,6 +46,7 @@ class FEModelEvaluator(Evaluator):
         for key, value in parameters.items():
             sheet.set(key, str(value))
 
+        sheet.recompute()
         doc.recompute()
 
         fea = ccxtools.FemToolsCcx()
@@ -89,6 +90,6 @@ if __name__ == "__main__":
     parameters = {"Length": 3000.0, "Width": 2200.0, "Height": 1500.0}
     path_to_fcd_file = "C:\\Repositories\\TheEng\\examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
     results_request = ["Disp"]
-    evaluator = FEModelEvaluator(parameters, results_request, path_to_fcd_file)
-    results = evaluator.evaluate()
+    evaluator = FEModelEvaluator(results_request, path_to_fcd_file)
+    results = evaluator.evaluate(parameters)
     print(f"Displacement is: {results[results_request[0]]}\n")

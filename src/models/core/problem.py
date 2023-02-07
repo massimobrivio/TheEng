@@ -31,7 +31,7 @@ class ProblemConstructor:
             operands, operations = expression_parser(expression)
             self._objectives.append(
                 lambda results, operands=operands, operations=operations: expression_evaluator(
-                    operands, operations, results
+                    results, operands, operations
                 )
             )
             self.nobj += 1
@@ -47,7 +47,7 @@ class ProblemConstructor:
             operands, operations = expression_parser(expression)
             self._constraints.append(
                 lambda results, operands=operands, operations=operations: expression_evaluator(
-                    operands, operations, results
+                    results, operands, operations
                 )
             )
             self.nconst += 1
@@ -90,17 +90,49 @@ class ProblemConstructor:
         """
         return self._lower_bounds, self._upper_bounds
 
+    def get_pnames(self) -> List[str]:
+        """Returns the names of the parameters.
+
+        Returns:
+            List[str]: _description_
+        """
+        return self.pnames
+
+    def get_nobj(self) -> int:
+        """Returns the number of objectives.
+
+        Returns:
+            int: _description_
+        """
+        return self.nobj
+
+    def get_nconst(self) -> int:
+        """Returns the number of constraints.
+
+        Returns:
+            int: _description_
+        """
+        return self.nconst
+
+    def get_nvar(self) -> int:
+        """Returns the number of variables.
+
+        Returns:
+            int: _description_
+        """
+        return self.nvar
+
 
 if __name__ == "__main__":
     bounds = {"x": (5, 10), "y": (6, 12), "z": (0, 3)}
-    results = {"A": 2.0, "B": 2, "C": 3}
-    obj_expressions = ["A^A + B", "A * B", "A / B", "A / B / C", "A - B - C"]
-    constr_expressions = ["A - B", "A + B + C", "A * B * C"]
+    results = {"Disp": 0.5, "B": 2.0, "C": 3}
+    obj_expressions = ["Disp^2", "Disp * B", "Disp / B", "Disp / B / C", "Disp - B - C"]
+    constr_expressions = ["Disp - 2", "Disp + B + C", "Disp * B * C"]
 
     problem = ProblemConstructor()
-    problem.set_bounds(bounds)
     problem.set_objectives(obj_expressions)
     problem.set_contraints(constr_expressions)
+    problem.set_bounds(bounds)
 
     for i, obj in enumerate(problem.get_objectives()):
         print(f"Objective Value nr. {i}: {obj(results)}")
