@@ -9,6 +9,7 @@ from pymoo.core.population import Population
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.operators.sampling.rnd import FloatRandomSampling
 from pymoo.optimize import minimize
+from pandas import DataFrame
 
 
 class Evaluator(ABC):
@@ -52,6 +53,9 @@ class Sampler(ABC):
         """
         self.problem_constructor = problem_constructor
         self.evaluator = evaluator
+        self.objective_expressions = problem_constructor.objectives_expressions
+        self.constraint_expressions = problem_constructor.constraints_expressions
+        self.results_expressions = evaluator.results_request
 
     def sample(self, n_samples: int = 50) -> Tuple:
         """Sample the design space.
@@ -73,8 +77,12 @@ class Sampler(ABC):
 
         f = res["F"]
         r = res["R"]
+        
+        data = concatenate([x, r], axis=1)
+        data = DataFrame(data, 
+                         columns=self.pname + self.results_expressions + self.objective_expressions + self.constraint_expressions)
 
-        return x, f, r
+        return x, f, data
 
     @abstractmethod
     def _algorithm(
@@ -165,6 +173,10 @@ class Optimizer(ABC):
             restart_pop (Union[FloatRandomSampling, Population], optional): _description_. Defaults to FloatRandomSampling().
         """
         self.problem_constructor = problem_constructor
+        self.pname = problem_constructor.get_pnames()
+        self.objective_expressions = problem_constructor.objectives_expressions
+        self.constraint_expressions = problem_constructor.constraints_expressions
+        self.results_expressions = evaluator.results_request
         self.evaluator = evaluator
         self.restart_pop = restart_pop
 
@@ -194,8 +206,12 @@ class Optimizer(ABC):
         f = res.F.tolist()
         x_hist = concatenate(res.algorithm.callback.data["x_hist"]).tolist()
         r_hist = concatenate(res.algorithm.callback.data["r_hist"]).tolist()
+        
+        data = concatenate([x_hist, r_hist], axis=1)
+        data = DataFrame(data, 
+                         columns=self.pname + self.results_expressions + self.objective_expressions + self.constraint_expressions)
 
-        return x, f, x_hist, r_hist
+        return x, f, data
 
     @abstractmethod
     def _algorithm(self):
@@ -255,3 +271,8 @@ class HistCallback(Callback):
     def notify(self, algorithm):
         self.data["x_hist"].append(algorithm.pop.get("X"))
         self.data["r_hist"].append(algorithm.pop.get("R"))
+
+
+class Surrogate(ABC):
+    def __init__(self) -> None:
+        pass
