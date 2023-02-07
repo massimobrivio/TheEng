@@ -73,7 +73,6 @@ class NSGA_III(Optimizer):
 
 
 if __name__ == "__main__":
-    from problem import ProblemConstructor
     from evaluator import FEModelEvaluator
 
     obj_expression = ["Disp"]

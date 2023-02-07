@@ -234,7 +234,7 @@ class OptimizationProblem(ElementwiseProblem):
 
         parameters = {
             name: value for name, value in zip(self._pnames, x)
-        }  # probably does not work
+        }
         results = self._evaluator.evaluate(parameters)  # type: ignore
 
         f = [obj(results) for obj in self._objectives]

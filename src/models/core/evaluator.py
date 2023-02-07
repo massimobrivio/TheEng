@@ -3,7 +3,7 @@
 # Macro Begin: C:\Users\brivio\Desktop\Interface.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
 import sys
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Callable
 
 from abstract import Evaluator
 import json
@@ -79,7 +79,6 @@ class FEModelEvaluator(Evaluator):
 class CFDModelEvaluator(Evaluator):
     def __init__(
         self,
-        parameters: Dict[str, float],
         results_request: List[str],
         path_to_fcd_file: str,
     ) -> None:
