@@ -6,9 +6,11 @@ from collections import defaultdict
 from typing import Dict, List
 
 from abstract import Evaluator
+import json
 
-FREECADPATH = "C:\\Engineering Programs\\FreeCAD 0.20\\bin"
-sys.path.append(FREECADPATH)
+f = open("configs\\settings.json")
+data = json.load(f)
+sys.path.append(data["FREECADPATH"])
 
 import FreeCAD
 from femtools import ccxtools
@@ -27,6 +29,8 @@ class FEModelEvaluator(Evaluator):
             path_to_fcd_file (str): path to the FreeCAD file containing the model.
         """
         super().__init__(results_request, path_to_fcd_file)
+        self.doc = FreeCAD.open(self.path_to_fcd_file)
+        self.sheet = self.doc.getObject("Spreadsheet")
 
     def evaluate(self, parameters: Dict[str, float]) -> Dict[str, float]:
         """Evaluate the design parameters and return the results by updating the spreadsheet and running the FEM analysis in FreeCAD.
@@ -40,14 +44,14 @@ class FEModelEvaluator(Evaluator):
         Returns:
             Dict[str, float]: dictionary containing results aliases and values.
         """
-        doc = FreeCAD.open(self.path_to_fcd_file)
-        sheet = doc.getObject("Spreadsheet")
+        # doc = FreeCAD.open(self.path_to_fcd_file)
+        # sheet = doc.getObject("Spreadsheet")
 
         for key, value in parameters.items():
-            sheet.set(key, str(value))
+            self.sheet.set(key, str(value))
 
-        sheet.recompute()
-        doc.recompute()
+        self.sheet.recompute()
+        self.doc.recompute()
 
         fea = ccxtools.FemToolsCcx()
         fea.update_objects()
@@ -64,10 +68,10 @@ class FEModelEvaluator(Evaluator):
                 "Houston, we have a problem! {}\n".format(message)
             )  # in Python console
 
-        sheet.recompute()
+        self.sheet.recompute()
         results = defaultdict(float)
         for result in self.results_request:
-            results[result] = sheet.get(result)
+            results[result] = self.sheet.get(result)
 
         return results
 
@@ -79,7 +83,7 @@ class CFDModelEvaluator(Evaluator):
         results_request: List[str],
         path_to_fcd_file: str,
     ) -> None:
-        super().__init__(parameters, results_request, path_to_fcd_file)
+        super().__init__(results_request, path_to_fcd_file)
         raise NotImplementedError("CFDModelEvaluator is not implemented yet.")
 
     def evaluate(self):

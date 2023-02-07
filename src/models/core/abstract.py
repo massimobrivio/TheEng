@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
-from numpy import ndarray
+from numpy import concatenate
 from problem import ProblemConstructor
 from pymoo.core.callback import Callback
+from pymoo.core.population import Population
 from pymoo.core.problem import ElementwiseProblem
+from pymoo.operators.sampling.rnd import FloatRandomSampling
 from pymoo.optimize import minimize
 
 
@@ -42,11 +44,17 @@ class Sampler(ABC):
     def __init__(
         self, problem_constructor: ProblemConstructor, evaluator: Evaluator
     ) -> None:
+        """Initialize the sampler.
+
+        Args:
+            problem_constructor (ProblemConstructor): _description_
+            evaluator (Evaluator): _description_
+        """
         self.problem_constructor = problem_constructor
         self.evaluator = evaluator
 
     def sample(self, n_samples: int = 50) -> Tuple:
-        """_summary_
+        """Sample the design space.
 
         Args:
             n_samples (int, optional): _description_. Defaults to 50.
@@ -76,13 +84,28 @@ class Sampler(ABC):
         upper_bounds: List[float],
         nvar: int,
     ) -> List[List[float]]:
-        """Implement the sampling algorithm."""
+        """Implement the sampling algorithm.
+
+        Args:
+            n_samples (int): _description_
+            lower_bounds (List[float]): _description_
+            upper_bounds (List[float]): _description_
+            nvar (int): _description_
+
+        Returns:
+            List[List[float]]: _description_
+        """
         pass
 
 
 class SamplingProblem:
     def __init__(self, problem_constructor: ProblemConstructor, evaluator: Evaluator):
+        """Initialize the sampling problem.
 
+        Args:
+            problem_constructor (ProblemConstructor): _description_
+            evaluator (Evaluator): _description_
+        """
         self._evaluator = evaluator
 
         self._nvar = problem_constructor.get_nvar()
@@ -95,7 +118,15 @@ class SamplingProblem:
     def _evaluate(
         self, x: List[List[float]], out: Dict[str, List[List[float]]], *args, **kwargs
     ) -> Dict[str, List[List[float]]]:
+        """Evaluate the sampling problem on the given samples.
 
+        Args:
+            x (List[List[float]]): _description_
+            out (Dict[str, List[List[float]]]): _description_
+
+        Returns:
+            Dict[str, List[List[float]]]: _description_
+        """
         f = []
         g = []
         r = []
@@ -124,18 +155,21 @@ class Optimizer(ABC):
         self,
         problem_constructor: ProblemConstructor,
         evaluator: Evaluator,
+        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
     ) -> None:
-        """_summary_
+        """Initialize the optimizer.
 
         Args:
             problem_constructor (ProblemConstructor): _description_
             evaluator (Evaluator): _description_
+            restart_pop (Union[FloatRandomSampling, Population], optional): _description_. Defaults to FloatRandomSampling().
         """
         self.problem_constructor = problem_constructor
         self.evaluator = evaluator
+        self.restart_pop = restart_pop
 
     def optimize(self, termination: Tuple[str, int]) -> Tuple:
-        """_summary_
+        """Optimize the design.
 
         Args:
             termination (Tuple[str, int]): _description_
@@ -156,18 +190,12 @@ class Optimizer(ABC):
             return_least_infeasible=True,
         )
 
-        x = res.X
-        f = res.F
-        r = res.R
-        x_hist = res.algorithm.callback.data["x_hist"]
-        r_hist = res.algorithm.callback.data["r_hist"]
+        x = res.X.tolist()
+        f = res.F.tolist()
+        x_hist = concatenate(res.algorithm.callback.data["x_hist"]).tolist()
+        r_hist = concatenate(res.algorithm.callback.data["r_hist"]).tolist()
 
-        print("-------------------------")
-        print(x_hist)
-        print("-------------------------")
-        print(r_hist)
-
-        return x, f, r, x_hist, r_hist
+        return x, f, x_hist, r_hist
 
     @abstractmethod
     def _algorithm(self):
@@ -176,6 +204,12 @@ class Optimizer(ABC):
 
 class OptimizationProblem(ElementwiseProblem):
     def __init__(self, problem_constructor: ProblemConstructor, evaluator: Evaluator):
+        """Initialize the optimization problem.
+
+        Args:
+            problem_constructor (ProblemConstructor): _description_
+            evaluator (Evaluator): _description_
+        """
 
         self._evaluator = evaluator
 
@@ -198,7 +232,9 @@ class OptimizationProblem(ElementwiseProblem):
 
     def _evaluate(self, x, out, *args, **kwargs):
 
-        parameters = {name: value for name, value in zip(self._pnames, x)}  # probably does not work
+        parameters = {
+            name: value for name, value in zip(self._pnames, x)
+        }  # probably does not work
         results = self._evaluator.evaluate(parameters)  # type: ignore
 
         f = [obj(results) for obj in self._objectives]
@@ -219,5 +255,3 @@ class HistCallback(Callback):
     def notify(self, algorithm):
         self.data["x_hist"].append(algorithm.pop.get("X"))
         self.data["r_hist"].append(algorithm.pop.get("R"))
-
-
