@@ -13,6 +13,12 @@ class LatinHypercube(Sampler):
     def __init__(
         self, problem_constructor: ProblemConstructor, evaluator: Evaluator
     ) -> None:
+        """Initialize Latin Hypercube sampling.
+
+        Args:
+            problem_constructor (ProblemConstructor): The optimization problem.
+            evaluator (Evaluator): The evaluator.
+        """
         super().__init__(problem_constructor, evaluator)
 
     def _algorithm(
@@ -22,13 +28,16 @@ class LatinHypercube(Sampler):
         upper_bounds: List[float],
         nvar: int,
     ) -> List[List[float]]:
-        """Implementation of Latin Hypercube sampling.
+        """_summary_
 
         Args:
-            n_samples (int, optional): Number of samples to generate.
+            n_samples (int): number of samples to generate.
+            lower_bounds (List[float]): lower bounds of the design space.
+            upper_bounds (List[float]): upper bounds of the design space.
+            nvar (int): number of variables in the design space.
 
         Returns:
-            ndarray: Numpy array of samples.
+            List[List[float]]: A list of samples to be evaluated
         """
         sampler = qmc.LatinHypercube(d=nvar)
         samp = sampler.random(n=n_samples)

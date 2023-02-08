@@ -15,6 +15,12 @@ class NelderMeadSearch(Optimizer):
     def __init__(
         self, problem_constructor: ProblemConstructor, evaluator: Evaluator
     ) -> None:
+        """Nelder-Mead search algorithm.
+
+        Args:
+            problem_constructor (ProblemConstructor): The problem to be solved.
+            evaluator (Evaluator): The evaluator to be used.
+        """
         super().__init__(problem_constructor, evaluator)
 
     def _algorithm(self):
@@ -29,6 +35,14 @@ class GeneticAlgorithm(Optimizer):
         popsize: int,
         restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
     ) -> None:
+        """Genetic algorithm.
+
+        Args:
+            problem_constructor (ProblemConstructor): The problem to be solved.
+            evaluator (Evaluator): The evaluator to be used.
+            popsize (int): The population for the stocastic algorthm.
+            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm. Defaults to FloatRandomSampling().
+        """
         self.popsize = popsize
         super().__init__(problem_constructor, evaluator, restart_pop)
 
@@ -44,6 +58,14 @@ class ParticleSwarm(Optimizer):
         popsize: int,
         restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
     ) -> None:
+        """Particle swarm optimization.
+
+        Args:
+            problem_constructor (ProblemConstructor): The problem to be solved.
+            evaluator (Evaluator): The evaluator to be used.
+            popsize (int): The population for the stocastic algorthm.
+            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm. Defaults to FloatRandomSampling().
+        """
         self.popsize = popsize
         super().__init__(problem_constructor, evaluator, restart_pop)
 
@@ -59,6 +81,14 @@ class NSGA_III(Optimizer):
         popsize: int,
         restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
     ) -> None:
+        """Non-dominated sorting genetic algorithm III.
+
+        Args:
+            problem_constructor (ProblemConstructor): The problem to be solved.
+            evaluator (Evaluator): The evaluator to be used.
+            popsize (int): The population for the stocastic algorthm.
+            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm. Defaults to FloatRandomSampling().
+        """
         self.popsize = popsize
         super().__init__(problem_constructor, evaluator, restart_pop)
 

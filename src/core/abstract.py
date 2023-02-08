@@ -26,11 +26,12 @@ class Evaluator(ABC):
         results_request: List[str],
         path_to_fcd_file: str,
     ) -> None:
-        """_summary_
+        """Initialize evaluator.
 
         Args:
-            results_request (List[str]): list of results aliases contained in the spreadsheet.
-            path_to_fcd_file (str): path to the FreeCAD file containing the model.
+            problem_constructor (ProblemConstructor): The problem to be evaluated.
+            results_request (List[str]): A list of results aliases contained in the spreadsheet which are to be returned.
+            path_to_fcd_file (str): The path to the FreeCAD file containing the model.
         """
         self.problem_constructor = problem_constructor
         self.path_to_fcd_file = path_to_fcd_file
@@ -42,14 +43,14 @@ class Evaluator(ABC):
     def evaluate(
         self, parameters: Dict[str, float], use_surrogate=False
     ) -> Dict[str, float]:
-        """_summary_
+        """A method to evaluate the design parameters and return the results. Both the simulator and the surrogate can be used.
 
         Args:
-            parameters (Dict[str, float]): _description_
-            use_surrogate (bool, optional): _description_. Defaults to False.
+            parameters (Dict[str, float]): A dicttionary of design parameters values and their aliases contained in the spreadsheet (names).
+            use_surrogate (bool, optional): Wether to use a surrogate instead of the simulator. Defaults to False.
 
         Returns:
-            Dict[str, float]: _description_
+            Dict[str, float]: A dictionary containing results aliases and values.
         """
         if use_surrogate:
             return self._evaluateSurrogate(parameters)
@@ -59,6 +60,15 @@ class Evaluator(ABC):
     def generate_surrogate(
         self, data: DataFrame, method: str = "polynomial", **kwargs
     ) -> Tuple[Pipeline, Tuple[float, float]]:
+        """A method to generate a surrogate model.
+
+        Args:
+            data (DataFrame): The dataframe containing the training data.
+            method (str, optional): The surrogare method to use. Defaults to "polynomial".
+
+        Returns:
+            Tuple[Pipeline, Tuple[float, float]]: A tuple containing the surrogate model and its performance (accuracy mean and standard deviation).
+        """
 
         training_data_x = data[self.problem_constructor.get_pnames()].values
         training_data_y = data[self.results_request].values
@@ -86,6 +96,17 @@ class Evaluator(ABC):
         return self.surrogate, self.surrogate_performance
 
     def _evaluateSurrogate(self, parameters: Dict[str, float]) -> Dict[str, float]:
+        """Method to evaluate the surrogate model.
+
+        Args:
+            parameters (Dict[str, float]): A dicttionary of design parameters values and their aliases contained in the spreadsheet (names).
+
+        Raises:
+            ValueError: If no surrogate has been generated.
+
+        Returns:
+            Dict[str, float]: A dictionary containing results aliases and values.
+        """
         if not self.surrogate:
             raise ValueError(
                 "No surrogate has been generated. Run method generate_surrogate first."
@@ -98,6 +119,9 @@ class Evaluator(ABC):
     def _evaluateSimulator(self, parameters: Dict[str, float]) -> Dict[str, float]:
         pass
 
+    def get_results_request(self) -> List[str]:
+        return self.results_request
+
 
 class Sampler(ABC):
     """Abstract class for sampling strategies."""
@@ -108,24 +132,24 @@ class Sampler(ABC):
         """Initialize the sampler.
 
         Args:
-            problem_constructor (ProblemConstructor): _description_
-            evaluator (Evaluator): _description_
+            problem_constructor (ProblemConstructor): The problem to be evaluated.
+            evaluator (Evaluator): The evaluator to be used.
         """
         self.problem_constructor = problem_constructor
         self.pname = problem_constructor.get_pnames()
         self.evaluator = evaluator
-        self.objective_expressions = problem_constructor.objectives_expressions
-        self.constraint_expressions = problem_constructor.constraints_expressions
-        self.results_expressions = evaluator.results_request
+        self.objective_expressions = problem_constructor.get_objectives_expressions()
+        self.constraint_expressions = problem_constructor.get_constraints_expressions()
+        self.results_expressions = evaluator.get_results_request()
 
     def sample(self, n_samples: int = 50) -> Tuple:
         """Sample the design space.
 
         Args:
-            n_samples (int, optional): _description_. Defaults to 50.
+            n_samples (int, optional): number of samples to generate. Defaults to 50.
 
         Returns:
-            Tuple: _description_
+            Tuple: The samples, the objective values and the results.
         """
 
         problem = SamplingProblem(self.problem_constructor, self.evaluator)
@@ -163,13 +187,13 @@ class Sampler(ABC):
         """Implement the sampling algorithm.
 
         Args:
-            n_samples (int): _description_
-            lower_bounds (List[float]): _description_
-            upper_bounds (List[float]): _description_
-            nvar (int): _description_
+            n_samples (int): Number of samples to generate.
+            lower_bounds (List[float]): Lower bounds of the design space.
+            upper_bounds (List[float]): Upper bounds of the design space.
+            nvar (int): Number of design variables.
 
         Returns:
-            List[List[float]]: _description_
+            List[List[float]]: The samples ready to be evaluated.
         """
         pass
 
@@ -179,8 +203,8 @@ class SamplingProblem:
         """Initialize the sampling problem.
 
         Args:
-            problem_constructor (ProblemConstructor): _description_
-            evaluator (Evaluator): _description_
+            problem_constructor (ProblemConstructor): The problem to be evaluated.
+            evaluator (Evaluator): The evaluator to be used.
         """
         self._evaluator = evaluator
 
@@ -197,11 +221,11 @@ class SamplingProblem:
         """Evaluate the sampling problem on the given samples.
 
         Args:
-            x (List[List[float]]): _description_
-            out (Dict[str, List[List[float]]]): _description_
+            x (List[List[float]]): Parameters samples.
+            out (Dict[str, List[List[float]]]): Retruned dictionary (inspured by Pymoo).
 
         Returns:
-            Dict[str, List[List[float]]]: _description_
+            Dict[str, List[List[float]]]: The evaluated samples, objectives and constraints.
         """
         f = []
         g = []
@@ -236,15 +260,15 @@ class Optimizer(ABC):
         """Initialize the optimizer.
 
         Args:
-            problem_constructor (ProblemConstructor): _description_
-            evaluator (Evaluator): _description_
-            restart_pop (Union[FloatRandomSampling, Population], optional): _description_. Defaults to FloatRandomSampling().
+            problem_constructor (ProblemConstructor): The problem to be evaluated.
+            evaluator (Evaluator): The evaluator to be used.
+            restart_pop (Union[FloatRandomSampling, Population], optional): A population to restart the optimizer. Defaults to FloatRandomSampling().
         """
         self.problem_constructor = problem_constructor
         self.pname = problem_constructor.get_pnames()
-        self.objective_expressions = problem_constructor.objectives_expressions
-        self.constraint_expressions = problem_constructor.constraints_expressions
-        self.results_expressions = evaluator.results_request
+        self.objective_expressions = problem_constructor.get_objectives_expressions()
+        self.constraint_expressions = problem_constructor.get_constraints_expressions()
+        self.results_expressions = evaluator.get_results_request()
         self.evaluator = evaluator
         self.restart_pop = restart_pop
 
@@ -254,10 +278,10 @@ class Optimizer(ABC):
         """Optimize the design.
 
         Args:
-            termination (Tuple[str, int]): _description_
+            termination (Tuple[str, int]): A tuple containing the termination criterion as described in Pymoo library.
 
         Returns:
-            Tuple: _description_
+            Tuple: The samples, the objective values and the results.
         """
 
         problem = OptimizationProblem(
@@ -294,6 +318,7 @@ class Optimizer(ABC):
 
     @abstractmethod
     def _algorithm(self):
+        """Implement the optimization algorithm to be used."""
         pass
 
 
@@ -307,8 +332,8 @@ class OptimizationProblem(ElementwiseProblem):
         """Initialize the optimization problem.
 
         Args:
-            problem_constructor (ProblemConstructor): _description_
-            evaluator (Evaluator): _description_
+            problem_constructor (ProblemConstructor): The problem to be evaluated.
+            evaluator (Evaluator): The evaluator to be used.
         """
 
         self._use_surrogate = use_surrogate
@@ -331,10 +356,18 @@ class OptimizationProblem(ElementwiseProblem):
             xu=self._upper_bounds,
         )
 
-    def _evaluate(self, x, out, *args, **kwargs):
+    def _evaluate(self, x, out: dict, *args, **kwargs):
+        """Evaluate the optimization problem on the given designs.
+
+        Args:
+            x (_type_): Design samples.
+            out (dict): dictionary containing the evaluated samples, objectives and constraints.
+        """
 
         parameters = {name: value for name, value in zip(self._pnames, x)}
-        results = self._evaluator.evaluate(parameters, use_surrogate=self._use_surrogate)  # type: ignore
+        results = self._evaluator.evaluate(
+            parameters, use_surrogate=self._use_surrogate
+        )
 
         f = [obj(results) for obj in self._objectives]
         g = [constr(results) for constr in self._constraints]
@@ -346,6 +379,8 @@ class OptimizationProblem(ElementwiseProblem):
 
 
 class HistCallback(Callback):
+    """A class to store the all history of the optimization process."""
+
     def __init__(self) -> None:
         super().__init__()
         self.data["x_hist"] = []

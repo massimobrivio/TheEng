@@ -46,7 +46,7 @@ def expression_evaluator(
         results (Dict[str, float]): Dictionary of results from the simulator.
 
     Raises:
-        ValueError: _description_
+        ValueError: When a operand used in the expression is not known.
 
     Returns:
         float: Result of the expression.
@@ -123,7 +123,7 @@ def find_similar(
         nameslist (List[str]): the list of names to compare with the source name.
 
     Returns:
-        List[str]: A list of similar names.
+        Tuple[List[str], List[float]]: A tuple of sorted lists of similar names and their similarities.
     """
     similar_names_similarity = []
     for name in nameslist:

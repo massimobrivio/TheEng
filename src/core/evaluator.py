@@ -27,6 +27,7 @@ class FEModelEvaluator(Evaluator):
         """Initialize an FEM evaluator.
 
         Args:
+            problem (ProblemConstructor): problem to be evaluated.
             results_request (List[str]): list of results aliases contained in the spreadsheet.
             path_to_fcd_file (str): path to the FreeCAD file containing the model.
         """
@@ -40,14 +41,9 @@ class FEModelEvaluator(Evaluator):
         Args:
             parameters (Dict[str, float]): dictionary of design parameters containing aliases and values contained in the spreadsheet.
 
-        Raises:
-            Exception: _description_
-
         Returns:
             Dict[str, float]: dictionary containing results aliases and values.
         """
-        # doc = FreeCAD.open(self.path_to_fcd_file)
-        # sheet = doc.getObject("Spreadsheet")
 
         for key, value in parameters.items():
             self.sheet.set(key, str(value))
@@ -90,12 +86,3 @@ class CFDModelEvaluator(Evaluator):
 
     def _evaluateSimulator(self):
         pass
-
-
-# if __name__ == "__main__":
-#     parameters = {"Length": 3000.0, "Width": 2200.0, "Height": 1500.0}
-#     path_to_fcd_file = "C:\\Repositories\\TheEng\\examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
-#     results_request = ["Disp"]
-#     evaluator = FEModelEvaluator(problem, results_request, path_to_fcd_file)
-#     results = evaluator.evaluate(parameters)
-#     print(f"Displacement is: {results[results_request[0]]}\n")

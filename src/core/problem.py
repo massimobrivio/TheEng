@@ -70,7 +70,7 @@ class ProblemConstructor:
         """Returns a list of callables to evaluate the objectives of the problem.
 
         Returns:
-            List[Callable[(...), float]]: _description_
+            List[Callable[(...), float]]: List of callables to evaluate the objectives of the problem.
         """
         return self._objectives
 
@@ -78,7 +78,7 @@ class ProblemConstructor:
         """Returns a list of callables to evaluate the constraints of the problem.
 
         Returns:
-            List[Callable[(...), float]]: _description_
+            List[Callable[(...), float]]: List of callables to evaluate the constraints of the problem.
         """
         return self._constraints
 
@@ -86,7 +86,7 @@ class ProblemConstructor:
         """Returns the lower and upper bounds of the problem.
 
         Returns:
-            Tuple[List[float], List[float]]: _description_
+            Tuple[List[float], List[float]]: List of lower bounds and list of upper bounds.
         """
         return self._lower_bounds, self._upper_bounds
 
@@ -94,7 +94,7 @@ class ProblemConstructor:
         """Returns the names of the parameters.
 
         Returns:
-            List[str]: _description_
+            List[str]: The parameters names.
         """
         return self.pnames
 
@@ -102,7 +102,7 @@ class ProblemConstructor:
         """Returns the number of objectives.
 
         Returns:
-            int: _description_
+            int: The number of objectives.
         """
         return self.nobj
 
@@ -110,7 +110,7 @@ class ProblemConstructor:
         """Returns the number of constraints.
 
         Returns:
-            int: _description_
+            int: The number of constraints.
         """
         return self.nconst
 
@@ -118,9 +118,25 @@ class ProblemConstructor:
         """Returns the number of variables.
 
         Returns:
-            int: _description_
+            int: The number of variables.
         """
         return self.nvar
+
+    def get_objectives_expressions(self) -> List[str]:
+        """Returns the list of objectives expressions.
+
+        Returns:
+            List[str]: A list of objectives expressions.
+        """
+        return self.objectives_expressions
+
+    def get_constraints_expressions(self) -> List[str]:
+        """Returns the list of constraints expressions.
+
+        Returns:
+            List[str]: A list of constraints expressions.
+        """
+        return self.constraints_expressions
 
 
 if __name__ == "__main__":
