@@ -88,6 +88,5 @@ if __name__ == "__main__":
     )
 
     optimizer = GeneticAlgorithm(problem, evaluator, 3)
-    x, f, x_hist, r_hist = optimizer.optimize(("n_eval", 6))
-    print(x)
-    print(f)
+    x, f, data = optimizer.optimize(("n_eval", 6))
+    print(f"Data:\n {data}")

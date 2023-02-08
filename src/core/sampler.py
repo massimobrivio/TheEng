@@ -53,10 +53,9 @@ if __name__ == "__main__":
     )
 
     sampler = LatinHypercube(problem, evaluator)
-    x, f, r = sampler.sample(3)
+    x, f, data = sampler.sample(3)
 
-    print(f"Design variables: {x}")
-    print(f"Objectives: {f}")
-    print(f"Total: {r}")
-    print("------------------\n")
-
+    # print(f"Design variables: {x}")
+    # print(f"Objectives: {f}")
+    print(f"Data:\n {data}")
+    # print("------------------\n")

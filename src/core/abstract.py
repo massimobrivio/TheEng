@@ -52,6 +52,7 @@ class Sampler(ABC):
             evaluator (Evaluator): _description_
         """
         self.problem_constructor = problem_constructor
+        self.pname = problem_constructor.get_pnames()
         self.evaluator = evaluator
         self.objective_expressions = problem_constructor.objectives_expressions
         self.constraint_expressions = problem_constructor.constraints_expressions
@@ -77,10 +78,17 @@ class Sampler(ABC):
 
         f = res["F"]
         r = res["R"]
-        
+
         data = concatenate([x, r], axis=1)
-        data = DataFrame(data, 
-                         columns=self.pname + self.results_expressions + self.objective_expressions + self.constraint_expressions)
+        data = DataFrame(
+            data,
+            columns=self.pname
+            + self.results_expressions
+            + self.objective_expressions
+            + self.constraint_expressions,
+        )
+
+        data = data.T.drop_duplicates().T
 
         return x, f, data
 
@@ -206,10 +214,17 @@ class Optimizer(ABC):
         f = res.F.tolist()
         x_hist = concatenate(res.algorithm.callback.data["x_hist"]).tolist()
         r_hist = concatenate(res.algorithm.callback.data["r_hist"]).tolist()
-        
+
         data = concatenate([x_hist, r_hist], axis=1)
-        data = DataFrame(data, 
-                         columns=self.pname + self.results_expressions + self.objective_expressions + self.constraint_expressions)
+        data = DataFrame(
+            data,
+            columns=self.pname
+            + self.results_expressions
+            + self.objective_expressions
+            + self.constraint_expressions,
+        )
+
+        data = data.T.drop_duplicates().T  # drop duplicate columns
 
         return x, f, data
 
@@ -248,9 +263,7 @@ class OptimizationProblem(ElementwiseProblem):
 
     def _evaluate(self, x, out, *args, **kwargs):
 
-        parameters = {
-            name: value for name, value in zip(self._pnames, x)
-        }
+        parameters = {name: value for name, value in zip(self._pnames, x)}
         results = self._evaluator.evaluate(parameters)  # type: ignore
 
         f = [obj(results) for obj in self._objectives]
