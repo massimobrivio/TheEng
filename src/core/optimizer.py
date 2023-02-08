@@ -41,7 +41,7 @@ class GeneticAlgorithm(Optimizer):
             problem_constructor (ProblemConstructor): The problem to be solved.
             evaluator (Evaluator): The evaluator to be used.
             popsize (int): The population for the stocastic algorthm.
-            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm. Defaults to FloatRandomSampling().
+            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm.
         """
         self.popsize = popsize
         super().__init__(problem_constructor, evaluator, restart_pop)
@@ -64,7 +64,7 @@ class ParticleSwarm(Optimizer):
             problem_constructor (ProblemConstructor): The problem to be solved.
             evaluator (Evaluator): The evaluator to be used.
             popsize (int): The population for the stocastic algorthm.
-            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm. Defaults to FloatRandomSampling().
+            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm.
         """
         self.popsize = popsize
         super().__init__(problem_constructor, evaluator, restart_pop)
@@ -87,7 +87,7 @@ class NSGA_III(Optimizer):
             problem_constructor (ProblemConstructor): The problem to be solved.
             evaluator (Evaluator): The evaluator to be used.
             popsize (int): The population for the stocastic algorthm.
-            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm. Defaults to FloatRandomSampling().
+            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm.
         """
         self.popsize = popsize
         super().__init__(problem_constructor, evaluator, restart_pop)
