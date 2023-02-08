@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple, Iterable
 from utilities import expression_parser, expression_evaluator
 
 
@@ -27,6 +27,9 @@ class ProblemConstructor:
         Args:
             expressions (List[str]): List of expressions encoded as strings.
         """
+
+        ProblemConstructor._check_expressions(expressions)
+
         for expression in expressions:
             operands, operations = expression_parser(expression)
             self._objectives.append(
@@ -43,6 +46,9 @@ class ProblemConstructor:
         Args:
             expressions (List[str]): List of expressions encoded as strings. They will be considered <= 0.
         """
+
+        ProblemConstructor._check_expressions(expressions)
+
         for expression in expressions:
             operands, operations = expression_parser(expression)
             self._constraints.append(
@@ -59,6 +65,9 @@ class ProblemConstructor:
         Args:
             bounds (Dict[str, Tuple[float, float]]): A dictionary of the form {parameter: (lower_bound, upper_bound)}
         """
+
+        ProblemConstructor._check_bounds(bounds)
+
         for key, value in bounds.items():
             self._lower_bounds.append(value[0])
             self._upper_bounds.append(value[1])
@@ -137,6 +146,57 @@ class ProblemConstructor:
             List[str]: A list of constraints expressions.
         """
         return self.constraints_expressions
+
+    @staticmethod
+    def _check_expressions(expression: List[str]) -> bool:
+        """_summary_
+
+        Args:
+            expression (List[str]): Expressions to be checked.
+
+        Raises:
+            TypeError: If any expressions are not encoded as strings.
+
+        Returns:
+            bool: True if all expressions are encoded as strings.
+        """
+        if all([isinstance(exp, str) for exp in expression]):
+            return True
+        else:
+            raise TypeError("The expressions must be encoded as strings.")
+
+    @staticmethod
+    def _check_bounds(bounds: Dict[str, Tuple[float, float]]) -> bool:
+        """_summary_
+
+        Args:
+            bounds (Dict[str, Tuple[float, float]]): Bounds to be checked.
+
+        Raises:
+            TypeError: If the bounds are not encoded as a dictionary.
+
+        Returns:
+            bool: True if the bounds are encoded as a dictionary.
+        """
+        if isinstance(bounds, dict):
+            for name, value in bounds.items():
+                name_check = isinstance(name, str)
+                value_check = isinstance(value, Iterable)
+                number_check = all([isinstance(num, (int, float)) for num in value])
+                dim_check = value[0] < value[1]
+
+                if not dim_check:
+                    raise ValueError("The upper bound must be greater than the lower bound.")
+                elif not number_check:
+                    raise TypeError("The bounds values must be integers or floats.")
+                elif not value_check:
+                    raise TypeError("The bounds values must be encoded as tuples.")
+                elif not name_check:
+                    raise TypeError("The bounds keys must be strings.")
+                else:
+                    return True
+        else:
+            raise TypeError("The bounds must be encoded as a dictionary.")
 
 
 if __name__ == "__main__":

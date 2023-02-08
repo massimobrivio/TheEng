@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from inspect import getmembers, ismethod
-from typing import Dict, List, Tuple, Union
+from json import load as json_load
+from os.path import isfile, join
+from pickle import dump, load
+from typing import Dict, Iterable, List, Tuple, Union
 
 from numpy import concatenate
 from pandas import DataFrame
@@ -25,6 +28,7 @@ class Evaluator(ABC):
         problem_constructor: ProblemConstructor,
         results_request: List[str],
         path_to_fcd_file: str,
+        path_to_surrogate: Union[str, None] = None,
     ) -> None:
         """Initialize evaluator.
 
@@ -32,10 +36,25 @@ class Evaluator(ABC):
             problem_constructor (ProblemConstructor): The problem to be evaluated.
             results_request (List[str]): A list of results aliases contained in the spreadsheet which are to be returned.
             path_to_fcd_file (str): The path to the FreeCAD file containing the model.
+            path_to_surrogate (Union[str, None], optional): The path to the surrogate file. Defaults to None.
+
         """
         self.problem_constructor = problem_constructor
-        self.path_to_fcd_file = path_to_fcd_file
+
+        if not isinstance(results_request, Iterable):
+            raise TypeError("Results request must be Iterable.")
+        if not all([isinstance(result, str) for result in results_request]):
+            raise TypeError("All results request must be encoded as strings.")
+
         self.results_request = results_request
+
+        if not isfile(path_to_fcd_file):
+            raise FileNotFoundError(
+                "The FreeCAD file was not found. Check name and path."
+            )
+
+        self.path_to_fcd_file = path_to_fcd_file
+        self.path_to_surrogate = path_to_surrogate
 
         self.surrogate = None
         self.surrogate_performance = None
@@ -58,16 +77,17 @@ class Evaluator(ABC):
             return self._evaluateSimulator(parameters)
 
     def generate_surrogate(
-        self, data: DataFrame, method: str = "polynomial", **kwargs
+        self, data: DataFrame, method: str = "polynomial", save: bool = False, **kwargs
     ) -> Tuple[Pipeline, Tuple[float, float]]:
         """A method to generate a surrogate model.
 
         Args:
             data (DataFrame): The dataframe containing the training data.
             method (str, optional): The surrogare method to use. Defaults to "polynomial".
+            save (bool, optional): Wether to save the surrogate model to a file. Defaults to False.
 
         Returns:
-            Tuple[Pipeline, Tuple[float, float]]: A tuple containing the surrogate model and its performance (accuracy mean and standard deviation).
+            Tuple[Pipeline, Tuple[float, float]]: A tuple containing the surrogate model and its performance.
         """
 
         training_data_x = data[self.problem_constructor.get_pnames()].values
@@ -90,8 +110,21 @@ class Evaluator(ABC):
             **kwargs
         )  # get relevant method from Surrogate class
         self.surrogate = pipe.fit(training_data_x, training_data_y)
-        scores = cross_val_score(self.surrogate, training_data_x, training_data_y, cv=4)
+
+        n_data_rows = len(data)
+        test_set_numdata = n_data_rows * 0.2  # 20% of the data is used for testing in cross validation.
+        n_kfold_splits = round(n_data_rows/test_set_numdata) if test_set_numdata > 2 else 2
+        scores = cross_val_score(self.surrogate, training_data_x, training_data_y, cv=n_kfold_splits)
         self.surrogate_performance = (scores.mean(), scores.std())
+
+        if save:
+            if not self.path_to_surrogate:
+                raise ValueError(
+                    "No path to surrogate file specified. Please specify a path to save the surrogate."
+                )
+            with open(self.path_to_surrogate, "wb") as f:
+                dump(self.surrogate, f)
+            f.close()
 
         return self.surrogate, self.surrogate_performance
 
@@ -107,10 +140,18 @@ class Evaluator(ABC):
         Returns:
             Dict[str, float]: A dictionary containing results aliases and values.
         """
-        if not self.surrogate:
-            raise ValueError(
-                "No surrogate has been generated. Run method generate_surrogate first."
-            )
+        if not self.surrogate:  # Surrogate not loaded
+            try:  # Try to load surrogate from file
+                if not self.path_to_surrogate:
+                    raise ValueError(
+                        "No path to surrogate file specified. Please specify a path to load the surrogate."
+                    )
+                print(f"Trying to load surrogate from file... {self.path_to_surrogate}")
+                self.surrogate = load(open(self.path_to_surrogate, "rb"))
+            except FileNotFoundError:
+                raise ValueError(
+                    "No surrogate has been generated. Run method generate_surrogate first."
+                )
         predictions = self.surrogate.predict([list(parameters.values())])
         results = dict(zip(self.results_request, predictions[0]))
         return results
@@ -259,14 +300,23 @@ class Optimizer(ABC):
     ) -> None:
         """Initialize the optimizer.
 
+        Raises:
+            ValueError: If no objective expressions are defined.
+
         Args:
             problem_constructor (ProblemConstructor): The problem to be evaluated.
             evaluator (Evaluator): The evaluator to be used.
-            restart_pop (Union[FloatRandomSampling, Population], optional): A population to restart the optimizer. Defaults to FloatRandomSampling().
+            restart_pop (Union[FloatRandomSampling, Population], optional): A population to restart the optimizer.
         """
+
+        objective_expressions = problem_constructor.get_objectives_expressions()
+        if not objective_expressions:  # There have to be objectives.
+            raise ValueError("No objective expressions defined.")
+        else:
+            self.objective_expressions = objective_expressions
+
         self.problem_constructor = problem_constructor
         self.pname = problem_constructor.get_pnames()
-        self.objective_expressions = problem_constructor.get_objectives_expressions()
         self.constraint_expressions = problem_constructor.get_constraints_expressions()
         self.results_expressions = evaluator.get_results_request()
         self.evaluator = evaluator

@@ -105,12 +105,9 @@ class NSGA_III(Optimizer):
 if __name__ == "__main__":
     from evaluator import FEModelEvaluator
 
-    obj_expression = ["Disp"]
-    const_expression = ["Disp-2"]
-
     problem = ProblemConstructor()
-    problem.set_objectives(obj_expression)
-    problem.set_contraints(const_expression)
+    problem.set_objectives(["Disp"])
+    problem.set_contraints(["Disp-2"])
     problem.set_bounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )

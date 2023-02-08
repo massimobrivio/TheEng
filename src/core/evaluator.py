@@ -11,7 +11,7 @@ from problem import ProblemConstructor
 
 f = open("configs\\settings.json")
 data = json.load(f)
-sys.path.append(data["FREECADPATH"])
+sys.path.append(data["FREECAD_PATH"])
 
 import FreeCAD
 from femtools import ccxtools

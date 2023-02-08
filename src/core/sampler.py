@@ -49,12 +49,9 @@ class LatinHypercube(Sampler):
 if __name__ == "__main__":
     from evaluator import FEModelEvaluator
 
-    obj_expression = ["Disp^2"]
-    const_expression = ["Disp-2"]
-
     problem = ProblemConstructor()
-    problem.set_objectives(obj_expression)
-    problem.set_contraints(const_expression)
+    problem.set_objectives(["Disp^2"])
+    problem.set_contraints(["Disp-2"])
     problem.set_bounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
@@ -64,7 +61,10 @@ if __name__ == "__main__":
     )
 
     sampler = LatinHypercube(problem, evaluator)
-    x, f, data = sampler.sample(10)
+    x, f, data = sampler.sample(4)
+
+    print(f"Data: {data}")
+    print("------------------")
 
     surrogate, surrogate_performance = evaluator.generate_surrogate(
         data, method="polynomal"
@@ -74,8 +74,3 @@ if __name__ == "__main__":
 
     print(f"Surrogate performance: {surrogate_performance}")
     print(f"Surrogate prediction: {evaluator.evaluate(parameters, use_surrogate=True)}")
-
-    # print(f"Design variables: {x}")
-    # print(f"Objectives: {f}")
-    # print(f"Data:\n {data}")
-    # print("------------------\n")
