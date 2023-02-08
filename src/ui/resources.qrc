@@ -1,0 +1,9 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>icons/menu_sidebar.png</file>
+    <file>icons/visualization_sidebar.png</file>
+    <file>icons/optimization_sidebar.png</file>
+    <file>icons/sampling_sidebar.png</file>
+    <file>icons/surrogate_sidebar.png</file>
+  </qresource>
+</RCC>
