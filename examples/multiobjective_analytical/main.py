@@ -19,8 +19,8 @@ if __name__ == "__main__":
             p = list(parameters.values())
             results = {
                 "Disp": (4 * 10000.0 / 193140) * p[0] ** 3 / (p[1] * p[2] ** 3),
-                "Mass": p[0] * p[1] * p[2] * 1e-6
-                }
+                "Mass": p[0] * p[1] * p[2] * 1e-6,
+            }
             return results
 
     evaluator = FunctionEvaluator()

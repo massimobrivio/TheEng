@@ -81,10 +81,12 @@ if __name__ == "__main__":
     problem = ProblemConstructor()
     problem.set_objectives(obj_expression)
     problem.set_contraints(const_expression)
-    problem.set_bounds({"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)})
+    problem.set_bounds(
+        {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
+    )
 
     evaluator = FEModelEvaluator(
-        ["Disp"], "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
+        problem, ["Disp"], "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
     )
 
     optimizer = GeneticAlgorithm(problem, evaluator, 3)

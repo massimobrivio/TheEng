@@ -1,4 +1,5 @@
 import operator
+from difflib import SequenceMatcher
 from typing import Dict, List, Tuple
 
 
@@ -109,3 +110,29 @@ def test_float(x: str) -> bool:
         return True
     except ValueError:
         return False
+
+
+def find_similar(
+    source_name: str, nameslist: List[str]
+) -> Tuple[List[str], List[float]]:
+    """
+    Find similar names to a source name in a list of names.
+
+    Args:
+        source_name (str): the name to compare.
+        nameslist (List[str]): the list of names to compare with the source name.
+
+    Returns:
+        List[str]: A list of similar names.
+    """
+    similar_names_similarity = []
+    for name in nameslist:
+        similarity = SequenceMatcher(None, source_name, name).ratio()
+        if similarity > 0.8:
+            similar_names_similarity.append((name, similarity))
+
+    similar_names_similarity.sort(key=lambda x: x[1], reverse=True)
+    similar_names = [name for name, _ in similar_names_similarity]
+    similarities = [similarity for _, similarity in similar_names_similarity]
+
+    return similar_names, similarities

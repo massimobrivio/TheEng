@@ -46,16 +46,27 @@ if __name__ == "__main__":
     problem = ProblemConstructor()
     problem.set_objectives(obj_expression)
     problem.set_contraints(const_expression)
-    problem.set_bounds({"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)})
+    problem.set_bounds(
+        {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
+    )
 
     evaluator = FEModelEvaluator(
-        ["Disp"], "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
+        problem, ["Disp"], "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
     )
 
     sampler = LatinHypercube(problem, evaluator)
-    x, f, data = sampler.sample(3)
+    x, f, data = sampler.sample(10)
+
+    surrogate, surrogate_performance = evaluator.generate_surrogate(
+        data, method="polynomal"
+    )
+
+    parameters = {"Length": 3050.0, "Width": 2200.0, "Height": 1001}
+
+    print(f"Surrogate performance: {surrogate_performance}")
+    print(f"Surrogate prediction: {evaluator.evaluate(parameters, use_surrogate=True)}")
 
     # print(f"Design variables: {x}")
     # print(f"Objectives: {f}")
-    print(f"Data:\n {data}")
+    # print(f"Data:\n {data}")
     # print("------------------\n")

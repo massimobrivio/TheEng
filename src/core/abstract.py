@@ -1,15 +1,20 @@
 from abc import ABC, abstractmethod
 from collections import defaultdict
+from inspect import getmembers, ismethod
 from typing import Dict, List, Tuple, Union
 
 from numpy import concatenate
+from pandas import DataFrame
 from problem import ProblemConstructor
 from pymoo.core.callback import Callback
 from pymoo.core.population import Population
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.operators.sampling.rnd import FloatRandomSampling
 from pymoo.optimize import minimize
-from pandas import DataFrame
+from sklearn.model_selection import cross_val_score
+from sklearn.pipeline import Pipeline
+from surrogate import Surrogate
+from utilities import find_similar
 
 
 class Evaluator(ABC):
@@ -17,6 +22,7 @@ class Evaluator(ABC):
 
     def __init__(
         self,
+        problem_constructor: ProblemConstructor,
         results_request: List[str],
         path_to_fcd_file: str,
     ) -> None:
@@ -26,16 +32,70 @@ class Evaluator(ABC):
             results_request (List[str]): list of results aliases contained in the spreadsheet.
             path_to_fcd_file (str): path to the FreeCAD file containing the model.
         """
+        self.problem_constructor = problem_constructor
         self.path_to_fcd_file = path_to_fcd_file
         self.results_request = results_request
 
-    @abstractmethod
-    def evaluate(self, parameters: Dict[str, float]) -> Dict[str, float]:
-        """Evaluate the design parameters and return the results by updating the spreadsheet and running the FEM analysis in FreeCAD.
+        self.surrogate = None
+        self.surrogate_performance = None
+
+    def evaluate(
+        self, parameters: Dict[str, float], use_surrogate=False
+    ) -> Dict[str, float]:
+        """_summary_
 
         Args:
-            parameters (Dict[str, float]): dictionary of design parameters containing aliases and values contained in the spreadsheet.
+            parameters (Dict[str, float]): _description_
+            use_surrogate (bool, optional): _description_. Defaults to False.
+
+        Returns:
+            Dict[str, float]: _description_
         """
+        if use_surrogate:
+            return self._evaluateSurrogate(parameters)
+        else:
+            return self._evaluateSimulator(parameters)
+
+    def generate_surrogate(
+        self, data: DataFrame, method: str = "polynomial", **kwargs
+    ) -> Tuple[Pipeline, Tuple[float, float]]:
+
+        training_data_x = data[self.problem_constructor.get_pnames()].values
+        training_data_y = data[self.results_request].values
+
+        surrogate = Surrogate()
+
+        available_surrogates = [m[0] for m in getmembers(surrogate, predicate=ismethod)]
+        if method not in available_surrogates:
+            similar_methods, similarity_ratio = find_similar(
+                method, available_surrogates
+            )
+            similar_method = similar_methods[0]
+            print(
+                f"Method {method} not available or misspelled. Using {similar_method} instead.\n Matching percentage: {round(similarity_ratio[0]*100, 2)} %"
+            )
+            method = similar_method  # overwrite method with similar method
+
+        pipe = getattr(surrogate, method)(
+            **kwargs
+        )  # get relevant method from Surrogate class
+        self.surrogate = pipe.fit(training_data_x, training_data_y)
+        scores = cross_val_score(self.surrogate, training_data_x, training_data_y, cv=4)
+        self.surrogate_performance = (scores.mean(), scores.std())
+
+        return self.surrogate, self.surrogate_performance
+
+    def _evaluateSurrogate(self, parameters: Dict[str, float]) -> Dict[str, float]:
+        if not self.surrogate:
+            raise ValueError(
+                "No surrogate has been generated. Run method generate_surrogate first."
+            )
+        predictions = self.surrogate.predict([list(parameters.values())])
+        results = dict(zip(self.results_request, predictions[0]))
+        return results
+
+    @abstractmethod
+    def _evaluateSimulator(self, parameters: Dict[str, float]) -> Dict[str, float]:
         pass
 
 
@@ -188,7 +248,9 @@ class Optimizer(ABC):
         self.evaluator = evaluator
         self.restart_pop = restart_pop
 
-    def optimize(self, termination: Tuple[str, int]) -> Tuple:
+    def optimize(
+        self, termination: Tuple[str, int], use_surrogate: bool = False
+    ) -> Tuple:
         """Optimize the design.
 
         Args:
@@ -198,7 +260,9 @@ class Optimizer(ABC):
             Tuple: _description_
         """
 
-        problem = OptimizationProblem(self.problem_constructor, self.evaluator)
+        problem = OptimizationProblem(
+            self.problem_constructor, self.evaluator, use_surrogate=use_surrogate
+        )
         algorithm = self._algorithm()
 
         res = minimize(
@@ -234,7 +298,12 @@ class Optimizer(ABC):
 
 
 class OptimizationProblem(ElementwiseProblem):
-    def __init__(self, problem_constructor: ProblemConstructor, evaluator: Evaluator):
+    def __init__(
+        self,
+        problem_constructor: ProblemConstructor,
+        evaluator: Evaluator,
+        use_surrogate: bool = False,
+    ):
         """Initialize the optimization problem.
 
         Args:
@@ -242,6 +311,7 @@ class OptimizationProblem(ElementwiseProblem):
             evaluator (Evaluator): _description_
         """
 
+        self._use_surrogate = use_surrogate
         self._evaluator = evaluator
 
         self._nvar = problem_constructor.get_nvar()
@@ -264,7 +334,7 @@ class OptimizationProblem(ElementwiseProblem):
     def _evaluate(self, x, out, *args, **kwargs):
 
         parameters = {name: value for name, value in zip(self._pnames, x)}
-        results = self._evaluator.evaluate(parameters)  # type: ignore
+        results = self._evaluator.evaluate(parameters, use_surrogate=self._use_surrogate)  # type: ignore
 
         f = [obj(results) for obj in self._objectives]
         g = [constr(results) for constr in self._constraints]
@@ -284,8 +354,3 @@ class HistCallback(Callback):
     def notify(self, algorithm):
         self.data["x_hist"].append(algorithm.pop.get("X"))
         self.data["r_hist"].append(algorithm.pop.get("R"))
-
-
-class Surrogate(ABC):
-    def __init__(self) -> None:
-        pass

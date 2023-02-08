@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
 # Macro Begin: C:\Users\brivio\Desktop\Interface.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+import json
 import sys
 from collections import defaultdict
-from typing import Dict, List, Callable
+from typing import Dict, List
 
 from abstract import Evaluator
-import json
+from problem import ProblemConstructor
 
 f = open("configs\\settings.json")
 data = json.load(f)
@@ -19,6 +20,7 @@ from femtools import ccxtools
 class FEModelEvaluator(Evaluator):
     def __init__(
         self,
+        problem: ProblemConstructor,
         results_request: List[str],
         path_to_fcd_file: str,
     ) -> None:
@@ -28,11 +30,11 @@ class FEModelEvaluator(Evaluator):
             results_request (List[str]): list of results aliases contained in the spreadsheet.
             path_to_fcd_file (str): path to the FreeCAD file containing the model.
         """
-        super().__init__(results_request, path_to_fcd_file)
+        super().__init__(problem, results_request, path_to_fcd_file)
         self.doc = FreeCAD.open(self.path_to_fcd_file)
         self.sheet = self.doc.getObject("Spreadsheet")
 
-    def evaluate(self, parameters: Dict[str, float]) -> Dict[str, float]:
+    def _evaluateSimulator(self, parameters: Dict[str, float]) -> Dict[str, float]:
         """Evaluate the design parameters and return the results by updating the spreadsheet and running the FEM analysis in FreeCAD.
 
         Args:
@@ -79,20 +81,21 @@ class FEModelEvaluator(Evaluator):
 class CFDModelEvaluator(Evaluator):
     def __init__(
         self,
+        problem: ProblemConstructor,
         results_request: List[str],
         path_to_fcd_file: str,
     ) -> None:
-        super().__init__(results_request, path_to_fcd_file)
+        super().__init__(problem, results_request, path_to_fcd_file)
         raise NotImplementedError("CFDModelEvaluator is not implemented yet.")
 
-    def evaluate(self):
+    def _evaluateSimulator(self):
         pass
 
 
-if __name__ == "__main__":
-    parameters = {"Length": 3000.0, "Width": 2200.0, "Height": 1500.0}
-    path_to_fcd_file = "C:\\Repositories\\TheEng\\examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
-    results_request = ["Disp"]
-    evaluator = FEModelEvaluator(results_request, path_to_fcd_file)
-    results = evaluator.evaluate(parameters)
-    print(f"Displacement is: {results[results_request[0]]}\n")
+# if __name__ == "__main__":
+#     parameters = {"Length": 3000.0, "Width": 2200.0, "Height": 1500.0}
+#     path_to_fcd_file = "C:\\Repositories\\TheEng\\examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
+#     results_request = ["Disp"]
+#     evaluator = FEModelEvaluator(problem, results_request, path_to_fcd_file)
+#     results = evaluator.evaluate(parameters)
+#     print(f"Displacement is: {results[results_request[0]]}\n")

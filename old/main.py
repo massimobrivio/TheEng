@@ -113,18 +113,24 @@ class AiDev:
                 if isfile(join(self.path, "restart.pkl")):
                     restart_pop = load(join(self.path, "restart.pkl"))
                 else:
-                    raise FileNotFoundError("Restart file not found in working directory, please indicate one or select restart=False.")
+                    raise FileNotFoundError(
+                        "Restart file not found in working directory, please indicate one or select restart=False."
+                    )
             else:
                 restart_pop = FloatRandomSampling()
 
             if surrogate:
                 for _ in range(self.global_iter):
                     simulator_surrogate, _ = self._surrogate()
-                    results = self._optimization(simulator_surrogate, surrogate=True, restart_pop=restart_pop)
+                    results = self._optimization(
+                        simulator_surrogate, surrogate=True, restart_pop=restart_pop
+                    )
                     x_results = results["x"]
                     self.data = self.datahandler.add(data=self.data, samples=x_results)  # type: ignore
             else:
-                results = self._optimization(self.simulator, surrogate=False, restart_pop=restart_pop)
+                results = self._optimization(
+                    self.simulator, surrogate=False, restart_pop=restart_pop
+                )
                 x_hist = results["x_hist"]
                 fval_hist = results["fval_hist"]
 
@@ -198,7 +204,7 @@ class AiDev:
         self,
         objective: Callable[..., List[float]],
         surrogate: bool = False,
-        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling()
+        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
     ) -> Dict[str, DataFrame]:
         """_summary_
 
@@ -227,14 +233,14 @@ class AiDev:
                         objective,
                         self.features,
                         popsize=self.popsize,
-                        restart_pop=restart_pop
+                        restart_pop=restart_pop,
                     )(termination=termination)
                 else:
                     results = ParticleSwarm(
                         objective,
                         self.features,
                         popsize=self.popsize,
-                        restart_pop=restart_pop
+                        restart_pop=restart_pop,
                     )(termination=termination)
         else:
             termination = (
@@ -242,10 +248,9 @@ class AiDev:
                 if surrogate
                 else ("n_eval", self.global_iter)
             )
-            results = NSGA_III(objective, self.features, popsize=self.popsize,
-                               restart_pop=restart_pop)(
-                termination=termination
-            )
+            results = NSGA_III(
+                objective, self.features, popsize=self.popsize, restart_pop=restart_pop
+            )(termination=termination)
         return results
 
     def _decision(self, return_choices: int = 10) -> DataFrame:

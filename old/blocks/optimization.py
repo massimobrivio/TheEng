@@ -28,8 +28,11 @@ class NelderMeadSearch(Optimization):
 
 class GeneticAlgorithm(Optimization):
     def __init__(
-        self, objective: Callable[..., List[float]], features, popsize,
-        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling()
+        self,
+        objective: Callable[..., List[float]],
+        features,
+        popsize,
+        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
     ) -> None:
         """
 
@@ -46,8 +49,11 @@ class GeneticAlgorithm(Optimization):
 
 class ParticleSwarm(Optimization):
     def __init__(
-        self, objective: Callable[..., List[float]], features, popsize,
-        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling()
+        self,
+        objective: Callable[..., List[float]],
+        features,
+        popsize,
+        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
     ) -> None:
         """
 
@@ -64,8 +70,11 @@ class ParticleSwarm(Optimization):
 
 class NSGA_III(Optimization):
     def __init__(
-        self, objective: Callable[..., List[float]], features, popsize,
-        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling()
+        self,
+        objective: Callable[..., List[float]],
+        features,
+        popsize,
+        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
     ) -> None:
         """
 

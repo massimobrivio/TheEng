@@ -225,7 +225,7 @@ class Optimization(ABC):
         objective: Callable[..., List[float]],
         features: FeatureDefinition,
         popsize: int = 10,
-        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling()
+        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
     ) -> None:
         """_summary_
 
@@ -277,7 +277,12 @@ class Optimization(ABC):
         x_hist = DataFrame(x_hist, columns=self.features.pnames)
         fval_hist = DataFrame(rval_hist, columns=self.features.tnames)
 
-        results = {"x": x, "x_hist": x_hist, "fval_hist": fval_hist, "last_pop": res.pop}
+        results = {
+            "x": x,
+            "x_hist": x_hist,
+            "fval_hist": fval_hist,
+            "last_pop": res.pop,
+        }
 
         return results
 
