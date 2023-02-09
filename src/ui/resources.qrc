@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="icons">
+    <file>icons/problem_sidebar.png</file>
     <file>icons/menu_sidebar.png</file>
     <file>icons/visualization_sidebar.png</file>
     <file>icons/optimization_sidebar.png</file>

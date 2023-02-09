@@ -1,0 +1,2 @@
+pyuic5 -x theeng.ui -o view.py
+pyrcc5 resources.qrc -o resources_rc.py
