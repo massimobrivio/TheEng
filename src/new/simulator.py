@@ -7,11 +7,12 @@ from simulators import Simulators
 
 class Simulator:
     def __init__(self) -> None:
+        
         self.simulator = None
 
-    def generate(self, simulatorName: str) -> Callable:
-        simulator = Simulator._getSimulator(simulatorName)
-        self.simulator = simulator
+    def generate(self, simulatorName: str, fcdPath: str, resultsRequest: List[str]) -> Callable:
+        simulator = Simulator._getSimulator(simulatorName, fcdPath, resultsRequest)
+        self.simulator = simulator  # could add to a list of simulator so that we can create multiple simulators from different files.
         return simulator
 
     def simulate(self, parameters: Dict[str, float]) -> Dict[str, float]:
@@ -20,8 +21,8 @@ class Simulator:
         return self.simulator(parameters)
     
     @staticmethod
-    def _getSimulator(simulatorName: str) -> None:
-        simulators = Simulators()
+    def _getSimulator(simulatorName: str, fcdPath: str, resultsRequest: List[str]) -> None:
+        simulators = Simulators(resultsRequest, fcdPath)
         availableSimulators = [m[0] for m in getmembers(simulators, predicate=ismethod)]
         if simulatorName not in availableSimulators:
             similarMethods, similarity_ratio = Simulator._findSimilar(
@@ -60,3 +61,11 @@ class Simulator:
         similarities = [similarity for _, similarity in similar_names_similarity]
 
         return similar_names, similarities
+
+
+if __name__ == "__main__":
+    simulator = Simulator()
+    simulator.generate("femSimulator", "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd", ["Disp"])
+    results = simulator.simulate({"Length": 2000, "Width": 1000, "Height": 1100})
+    
+    print(results)

@@ -18,17 +18,17 @@ class Simulators:
     def __init__(
         self,
         resultsRequest: List[str],
-        path_to_fcd_file: str,
+        fcdPath: str,
     ) -> None:
         """Initialize an FEM evaluator.
 
         Args:
             problem (ProblemConstructor): problem to be evaluated.
             resultsRequest (List[str]): list of results aliases contained in the spreadsheet.
-            path_to_fcd_file (str): path to the FreeCAD file containing the model.
+            fcdPath (str): path to the FreeCAD file containing the model.
         """
         self.resultsRequest = resultsRequest
-        self.doc = FreeCAD.open(path_to_fcd_file)
+        self.doc = FreeCAD.open(fcdPath)
         self.sheet = self.doc.getObject("Spreadsheet")
 
     def femSimulator(self, parameters: Dict[str, float]) -> Dict[str, float]:
