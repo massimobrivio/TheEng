@@ -14,7 +14,7 @@ class Simulator:
     ) -> Callable:
         simulator = Simulator._getSimulator(simulatorName, fcdPath, resultsRequest)
         self.simulator = simulator  # could add to a list of simulator so that we can create multiple simulators from different files.
-        return simulator
+        return simulator  # type: ignore
 
     def simulate(self, parameters: Dict[str, float]) -> Dict[str, float]:
         if not self.simulator:
@@ -31,13 +31,13 @@ class Simulator:
         availableSimulators = [m[0] for m in getmembers(simulators, predicate=ismethod)]
         if simulatorName not in availableSimulators:
             similarMethods, similarity_ratio = Simulator._findSimilar(
-                method, availableSimulators
+                simulatorName, availableSimulators
             )
             similarMethod = similarMethods[0]
             print(
-                f"Method {method} not available or misspelled. Using {similarMethod} instead.\n Matching percentage: {round(similarity_ratio[0]*100, 2)} %"
+                f"Method {simulatorName} not available or misspelled. Using {similarMethod} instead.\n Matching percentage: {round(similarity_ratio[0]*100, 2)} %"
             )
-            method = similarMethod  # overwrite method with similar method
+            simulatorName = similarMethod  # overwrite method with similar method
         simulator = getattr(simulators, simulatorName)
         return simulator
 

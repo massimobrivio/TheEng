@@ -7,15 +7,12 @@ class Evaluator:
 
     def __init__(
         self,
-        resultsRequest: List[str],
-        fcdPath: str,
-        surrogatePath: Union[str, None] = None,
+        resultsRequest: List[str]
     ) -> None:
         """Initialize evaluator.
 
         Args:
-            problem_constructor (ProblemConstructor): The problem to be evaluated.
-            results_request (List[str]): A list of results aliases contained in the spreadsheet which are to be returned.
+            resultsRequest (List[str]): A list of results aliases contained in the spreadsheet which are to be returned.
             fcdPath (str): The path to the FreeCAD file containing the model.
             surrogatePath (Union[str, None], optional): The path to the surrogate file. Defaults to None.
 
@@ -27,36 +24,36 @@ class Evaluator:
             "results_request must be iterable.",
             "results_request must contain strings.",
         )
-        Evaluator._checkPath(fcdPath, f"No path to FreeCAD file found at {fcdPath}.")
 
         self.surrogate = None
         self.simulator = None
-
-        self.path_to_fcd_file = fcdPath
-        self.path_to_surrogate = surrogatePath
+        self.resultsRequest = resultsRequest
 
     def evaluate(
-        self, parameters: Dict[str, float], use_surrogate=False
+        self, parameters: Dict[str, float], useSurrogate=False
     ) -> Dict[str, float]:
         """A method to evaluate the design parameters and return the results. Both the simulator and the surrogate can be used.
 
         Args:
             parameters (Dict[str, float]): A dicttionary of design parameters values and their aliases contained in the spreadsheet (names).
-            use_surrogate (bool, optional): Wether to use a surrogate instead of the simulator. Defaults to False.
+            useSurrogate (bool, optional): Wether to use a surrogate instead of the simulator. Defaults to False.
 
         Returns:
             Dict[str, float]: A dictionary containing results aliases and values.
         """
-        if use_surrogate:
-            return self.surrogate(parameters)
+        if useSurrogate:
+            return self.surrogate(parameters)  # type: ignore
         else:
-            return self.simulator(parameters)
+            return self.simulator(parameters)  # type: ignore
 
     def setSurrogate(self, surrogate: Callable[(...), Dict[str, float]]):
         self.surrogate = surrogate
 
     def setSimulator(self, simulator: Callable[(...), Dict[str, float]]):
         self.simulator = simulator
+        
+    def getResultsRequest(self) -> List[str]:
+        return self.resultsRequest
 
     @staticmethod
     def _checkPath(path: str, *args) -> None:

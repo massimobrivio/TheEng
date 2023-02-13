@@ -17,10 +17,11 @@ class Surrogate:
         self.trainingData_y = data[resultRequest].values
 
         self.trainedSurrogate = None
+        self.results_request = resultRequest
 
     def generate(
         self, surrogateName: str, save: bool = False, **kwargs
-    ) -> Callable[(...), Dict[str, float]]:
+    ):
         surrogateMethod = Surrogate._getSurrogate(surrogateName)
         trainedSurrogate, surrogatePerformance = self.train(
             surrogateMethod, save=save, **kwargs
@@ -60,7 +61,7 @@ class Surrogate:
             raise ValueError(
                 "No surrogate has been generated. Use train() method first."
             )
-        predictions = self.trainedSurrogate.predict([list(parameters.values())])
+        predictions = self.trainedSurrogate.predict([list(parameters.values())])  # type: ignore        
         results = dict(zip(self.results_request, predictions[0]))
         return results
 
@@ -92,7 +93,7 @@ class Surrogate:
                 raise ValueError(
                     "No path specified. Please specify a path to save the surrogate."
                 )
-            with open(kwargs.get("surrogatePath"), "wb") as f:
+            with open(kwargs.get("surrogatePath"), "wb") as f:  # type: ignore
                 dump(trainedSurrogate, f)
             f.close()
 
@@ -104,13 +105,13 @@ class Surrogate:
         availableSurrogates = [m[0] for m in getmembers(surrogates, predicate=ismethod)]
         if surrogateName not in availableSurrogates:
             similarMethods, similarity_ratio = Surrogate._findSimilar(
-                method, availableSurrogates
+                surrogateName, availableSurrogates
             )
             similarMethod = similarMethods[0]
             print(
-                f"Method {method} not available or misspelled. Using {similarMethod} instead.\n Matching percentage: {round(similarity_ratio[0]*100, 2)} %"
+                f"Method {surrogateName} not available or misspelled. Using {similarMethod} instead.\n Matching percentage: {round(similarity_ratio[0]*100, 2)} %"
             )
-            method = similarMethod  # overwrite method with similar method
+            surrogateName = similarMethod  # overwrite method with similar method
         surrogateMethod = getattr(surrogates, surrogateName)
         return surrogateMethod
 
