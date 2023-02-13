@@ -28,7 +28,7 @@ class Surrogate:
         self.trainedSurrogate = trainedSurrogate
 
         return self.predict, surrogatePerformance
-    
+
     def getFromFile(self, surrogatePath: str) -> Callable[(...), Dict[str, float]]:
         try:  # Try to load surrogate from file
             Surrogate._checkPath(
@@ -57,7 +57,9 @@ class Surrogate:
             Dict[str, float]: A dictionary containing results aliases and values.
         """
         if not self.trainedSurrogate:
-            raise ValueError("No surrogate has been generated. Use train() method first.")
+            raise ValueError(
+                "No surrogate has been generated. Use train() method first."
+            )
         predictions = self.trainedSurrogate.predict([list(parameters.values())])
         results = dict(zip(self.results_request, predictions[0]))
         return results

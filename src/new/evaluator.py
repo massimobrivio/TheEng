@@ -1,8 +1,5 @@
 from typing import Callable, Dict, List, Iterable, Union
 from os.path import isfile
-from pickle import load
-
-from simulator import Simulator
 
 
 class Evaluator:
@@ -30,10 +27,7 @@ class Evaluator:
             "results_request must be iterable.",
             "results_request must contain strings.",
         )
-        Evaluator._checkPath(
-            fcdPath, 
-            f"No path to FreeCAD file found at {fcdPath}."
-            )
+        Evaluator._checkPath(fcdPath, f"No path to FreeCAD file found at {fcdPath}.")
 
         self.surrogate = None
         self.simulator = None
