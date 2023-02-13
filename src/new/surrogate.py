@@ -1,4 +1,4 @@
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Callable
 from inspect import getmembers, ismethod
 from difflib import SequenceMatcher
 from pickle import dump
@@ -9,9 +9,24 @@ from sklearn.model_selection import cross_val_score
 
 
 class Surrogate:
-    def __init__(self) -> None:
-        self.surrogate = None
-        self.surrogate_performance = None
+    def __init__(
+        self, data: DataFrame, parameterNames: List[str], resultRequest: List[str]
+    ) -> None:
+        self.trainingData_x = data[parameterNames].values
+        self.trainingData_y = data[resultRequest].values
+
+        self.trainedSurrogate = None
+
+    def generate(
+        self, surrogateName: str, save: bool = False, **kwargs
+    ) -> Callable[(...), Dict[str, float]]:
+        surrogateMethod = Surrogate._getSurrogate(surrogateName)
+        trainedSurrogate, surrogatePerformance = self.train(
+            surrogateMethod, save=save, **kwargs
+        )
+        self.trainedSurrogate = trainedSurrogate
+
+        return self.predict, surrogatePerformance
 
     def predict(self, parameters: Dict[str, float]) -> Dict[str, float]:
         """Method to evaluate the surrogate model.
@@ -25,26 +40,21 @@ class Surrogate:
         Returns:
             Dict[str, float]: A dictionary containing results aliases and values.
         """
-        predictions = self.surrogate.predict([list(parameters.values())])
+        if not self.trainedSurrogate:
+            raise ValueError("No surrogate has been generated. Use train() method first.")
+        predictions = self.trainedSurrogate.predict([list(parameters.values())])
         results = dict(zip(self.results_request, predictions[0]))
         return results
 
     def train(
         self,
-        data: DataFrame,
-        method: str,
-        parameterNames: List[str],
-        resultRequest: List[str],
+        surrogateMethod: str,
         save: bool = False,
         **kwargs,
-    ) -> None:
-        training_data_x = data[parameterNames].values
-        training_data_y = data[resultRequest].values
+    ) -> Tuple[object, Tuple[float, float]]:
+        trainedSurrogate = surrogateMethod.fit(self.trainingData_x, self.trainingData_y)
 
-        self.setSurrogate(method, **kwargs)
-        self.surrogate = self.surrogate.fit(training_data_x, training_data_y)
-
-        n_data_rows = len(data)
+        n_data_rows = len(self.trainingData_x)
         test_set_numdata = (
             n_data_rows * 0.2
         )  # 20% of the data is used for testing in cross validation.
@@ -52,22 +62,26 @@ class Surrogate:
             round(n_data_rows / test_set_numdata) if test_set_numdata > 2 else 2
         )
         scores = cross_val_score(
-            self.surrogate, training_data_x, training_data_y, cv=n_kfold_splits
+            trainedSurrogate,
+            self.trainingData_x,
+            self.trainingData_y,
+            cv=n_kfold_splits,
         )
-        self.surrogate_performance = (scores.mean(), scores.std())
+        surrogatePerformance = (scores.mean(), scores.std())
 
         if save:
-            if not self.path_to_surrogate:
+            if not kwargs.get("surrogatePath"):
                 raise ValueError(
                     "No path to surrogate file specified. Please specify a path to save the surrogate."
                 )
-            with open(self.path_to_surrogate, "wb") as f:
-                dump(self.surrogate, f)
+            with open(kwargs.get("surrogatePath"), "wb") as f:
+                dump(trainedSurrogate, f)
             f.close()
 
-        return self.surrogate, self.surrogate_performance
+        return trainedSurrogate, surrogatePerformance
 
-    def setSurrogate(self, surrogateName: str) -> None:
+    @staticmethod
+    def _getSurrogate(surrogateName: str) -> Callable:
         surrogates = Surrogates()
         availableSurrogates = [m[0] for m in getmembers(surrogates, predicate=ismethod)]
         if surrogateName not in availableSurrogates:
@@ -79,7 +93,8 @@ class Surrogate:
                 f"Method {method} not available or misspelled. Using {similarMethod} instead.\n Matching percentage: {round(similarity_ratio[0]*100, 2)} %"
             )
             method = similarMethod  # overwrite method with similar method
-        self.surrogate = getattr(surrogates, surrogateName)
+        surrogateMethod = getattr(surrogates, surrogateName)
+        return surrogateMethod
 
     @staticmethod
     def _findSimilar(

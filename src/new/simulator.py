@@ -1,4 +1,4 @@
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Callable
 from inspect import getmembers, ismethod
 from difflib import SequenceMatcher
 
@@ -9,10 +9,18 @@ class Simulator:
     def __init__(self) -> None:
         self.simulator = None
 
-    def simulate(self, parameters: Dict[str, float]) -> Dict[str, float]:
-        return self.simulator(parameters)
+    def generate(self, simulatorName: str) -> Callable:
+        simulator = Simulator._getSimulator(simulatorName)
+        self.simulator = simulator
+        return simulator
 
-    def setSimulator(self, simulatorName: str) -> None:
+    def simulate(self, parameters: Dict[str, float]) -> Dict[str, float]:
+        if not self.simulator:
+            raise ValueError("No simulator has been generated. Use generate() method first.")
+        return self.simulator(parameters)
+    
+    @staticmethod
+    def _getSimulator(simulatorName: str) -> None:
         simulators = Simulators()
         availableSimulators = [m[0] for m in getmembers(simulators, predicate=ismethod)]
         if simulatorName not in availableSimulators:
@@ -24,7 +32,8 @@ class Simulator:
                 f"Method {method} not available or misspelled. Using {similarMethod} instead.\n Matching percentage: {round(similarity_ratio[0]*100, 2)} %"
             )
             method = similarMethod  # overwrite method with similar method
-        self.simulator = getattr(simulators, simulatorName)
+        simulator = getattr(simulators, simulatorName)
+        return simulator
 
     @staticmethod
     def _findSimilar(
