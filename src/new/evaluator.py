@@ -11,16 +11,16 @@ class Evaluator:
     def __init__(
         self,
         resultsRequest: List[str],
-        path_to_fcd_file: str,
-        path_to_surrogate: Union[str, None] = None,
+        fcdPath: str,
+        surrogatePath: Union[str, None] = None,
     ) -> None:
         """Initialize evaluator.
 
         Args:
             problem_constructor (ProblemConstructor): The problem to be evaluated.
             results_request (List[str]): A list of results aliases contained in the spreadsheet which are to be returned.
-            path_to_fcd_file (str): The path to the FreeCAD file containing the model.
-            path_to_surrogate (Union[str, None], optional): The path to the surrogate file. Defaults to None.
+            fcdPath (str): The path to the FreeCAD file containing the model.
+            surrogatePath (Union[str, None], optional): The path to the surrogate file. Defaults to None.
 
         """
 
@@ -31,15 +31,15 @@ class Evaluator:
             "results_request must contain strings.",
         )
         Evaluator._checkPath(
-            path_to_fcd_file, 
-            f"No path to FreeCAD file found at {path_to_fcd_file}."
+            fcdPath, 
+            f"No path to FreeCAD file found at {fcdPath}."
             )
 
         self.surrogate = None
         self.simulator = None
 
-        self.path_to_fcd_file = path_to_fcd_file
-        self.path_to_surrogate = path_to_surrogate
+        self.path_to_fcd_file = fcdPath
+        self.path_to_surrogate = surrogatePath
 
     def evaluate(
         self, parameters: Dict[str, float], use_surrogate=False
@@ -54,44 +54,15 @@ class Evaluator:
             Dict[str, float]: A dictionary containing results aliases and values.
         """
         if use_surrogate:
-            return self._evaluateSurrogate(parameters)
+            return self.surrogate(parameters)
         else:
-            return self._evaluateSimulator(parameters)
+            return self.simulator(parameters)
 
-    def setSurrogate(self, surrogate):
-        pass  # to implement
+    def setSurrogate(self, surrogate: Callable[(...), Dict[str, float]]):
+        self.surrogate = surrogate
 
-    def setSimulator(self, simulatorName: str):
-        self.simulator = Simulator()
-        self.simulator.setSimulator(simulatorName)
-
-    def _evaluateSurrogate(self, parameters: Dict[str, float]) -> Dict[str, float]:
-        """Method to evaluate the surrogate model.
-
-        Args:
-            parameters (Dict[str, float]): A dicttionary of design parameters values and their aliases contained in the spreadsheet (names).
-
-        Raises:
-            ValueError: If no surrogate has been generated.
-
-        Returns:
-            Dict[str, float]: A dictionary containing results aliases and values.
-        """
-        if not self.surrogate:  # Surrogate not loaded
-            try:  # Try to load surrogate from file
-                Evaluator._checkPath(
-                    self.path_to_surrogate,
-                    "No path to surrogate file specified. Please specify a path to load the surrogate.",
-                )
-                print(f"Trying to load surrogate from file... {self.path_to_surrogate}")
-                self.surrogate = load(open(self.path_to_surrogate, "rb"))
-            except FileNotFoundError:
-                raise ValueError(
-                    "No surrogate has been generated. Run method generate_surrogate first."
-                )
-        predictions = self.surrogate.predict([list(parameters.values())])
-        results = dict(zip(self.results_request, predictions[0]))
-        return results
+    def setSimulator(self, simulator: Callable[(...), Dict[str, float]]):
+        self.simulator = simulator
 
     @staticmethod
     def _checkPath(path: str, *args) -> None:

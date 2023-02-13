@@ -1,7 +1,8 @@
 from typing import Tuple, List, Dict, Callable
 from inspect import getmembers, ismethod
 from difflib import SequenceMatcher
-from pickle import dump
+from pickle import dump, load
+from os.path import isfile
 
 from pandas import DataFrame
 from surrogates import Surrogates
@@ -27,6 +28,21 @@ class Surrogate:
         self.trainedSurrogate = trainedSurrogate
 
         return self.predict, surrogatePerformance
+    
+    def getFromFile(self, surrogatePath: str) -> Callable[(...), Dict[str, float]]:
+        try:  # Try to load surrogate from file
+            Surrogate._checkPath(
+                surrogatePath,
+                "No path to surrogate file specified. Please specify a path to load the surrogate.",
+            )
+            print(f"Trying to load surrogate from file... {surrogatePath}")
+            trainedSurrogate = load(open(surrogatePath, "rb"))
+            self.trainedSurrogate = trainedSurrogate
+        except FileNotFoundError:
+            raise ValueError(
+                "No surrogate has been generated. Run method generate_surrogate first."
+            )
+        return self.predict
 
     def predict(self, parameters: Dict[str, float]) -> Dict[str, float]:
         """Method to evaluate the surrogate model.
@@ -48,7 +64,7 @@ class Surrogate:
 
     def train(
         self,
-        surrogateMethod: str,
+        surrogateMethod,
         save: bool = False,
         **kwargs,
     ) -> Tuple[object, Tuple[float, float]]:
@@ -72,7 +88,7 @@ class Surrogate:
         if save:
             if not kwargs.get("surrogatePath"):
                 raise ValueError(
-                    "No path to surrogate file specified. Please specify a path to save the surrogate."
+                    "No path specified. Please specify a path to save the surrogate."
                 )
             with open(kwargs.get("surrogatePath"), "wb") as f:
                 dump(trainedSurrogate, f)
@@ -121,3 +137,8 @@ class Surrogate:
         similarities = [similarity for _, similarity in similar_names_similarity]
 
         return similar_names, similarities
+
+    @staticmethod
+    def _checkPath(path: str, *args) -> None:
+        if not isfile(path):
+            raise FileNotFoundError(args[0])
