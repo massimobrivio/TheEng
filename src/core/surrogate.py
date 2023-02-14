@@ -120,7 +120,7 @@ if __name__ == "__main__":
     )
 
     simul = Simulator()
-    simulator = simul.generate(
+    simulator = simul.do(
         "femSimulator",
         "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd",
         ["Disp"],
