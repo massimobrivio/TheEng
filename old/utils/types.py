@@ -347,7 +347,6 @@ class Problem(ElementwiseProblem):
             self.are_minimizations.values(),
             self.are_constraints.values(),
         ):
-
             r.append(result)
 
             if is_obj:

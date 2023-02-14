@@ -1,76 +1,120 @@
-from typing import List
+from collections import defaultdict
+from typing import Dict, List
 
-from abstract import Evaluator, Sampler
+from evaluator import Evaluator
+from numpy import concatenate
+from pandas import DataFrame
 from problem import ProblemConstructor
+from samplers import Samplers
 from scipy.stats import qmc
 
+from abstract import Blues
 
-class LatinHypercube(Sampler):
-    """
-    Class for Latin design space sampling.
-    """
 
-    def __init__(
-        self, problem_constructor: ProblemConstructor, evaluator: Evaluator
-    ) -> None:
-        """Initialize Latin Hypercube sampling.
+class Sampler(Blues):
+    def __init__(self, problem: ProblemConstructor, evaluator: Evaluator) -> None:
+        super().__init__(problem, evaluator)
+
+    def do(self, samplerName: str, nSamples: int):
+        problem = SamplingProblem(self.problem, self.evaluator)
+
+        samplerMethod = self._getGreen(Samplers, samplerName, nVar=self.nVar)()
+        samp = samplerMethod.random(n=nSamples)
+        samples = qmc.scale(samp, self.lowerBounds, self.upperBounds).tolist()
+
+        out = defaultdict(list)
+        res = problem._evaluate(samples, out)  # type: ignore
+
+        f = res["F"]
+        r = res["R"]
+
+        data = concatenate([samples, r], axis=1)
+        data = DataFrame(
+            data,
+            columns=self.pname
+            + self.resultsExpressions
+            + self.objectiveExpressions
+            + self.constraintExpressions,
+        )
+
+        data = data.T.drop_duplicates().T
+
+        return samples, f, data
+
+
+class SamplingProblem:
+    def __init__(self, problem: ProblemConstructor, evaluator: Evaluator):
+        """Initialize the sampling problem.
 
         Args:
-            problem_constructor (ProblemConstructor): The optimization problem.
-            evaluator (Evaluator): The evaluator.
+            problem (ProblemConstructor): The problem to be evaluated.
+            evaluator (Evaluator): The evaluator to be used.
         """
-        super().__init__(problem_constructor, evaluator)
+        self._evaluator = evaluator
 
-    def _algorithm(
-        self,
-        n_samples: int,
-        lower_bounds: List[float],
-        upper_bounds: List[float],
-        nvar: int,
-    ) -> List[List[float]]:
-        """_summary_
+        self._nVar = problem.getNvar()
+        self._pnames = problem.getPnames()
+
+        self._objectives = problem.getObjectives()
+        self._constraints = problem.getConstraints()
+        self._lowerBounds, self._upperBounds = problem.getBounds()
+
+    def _evaluate(
+        self, x: List[List[float]], out: Dict[str, List[List[float]]], *args, **kwargs
+    ) -> Dict[str, List[List[float]]]:
+        """Evaluate the sampling problem on the given samples.
 
         Args:
-            n_samples (int): number of samples to generate.
-            lower_bounds (List[float]): lower bounds of the design space.
-            upper_bounds (List[float]): upper bounds of the design space.
-            nvar (int): number of variables in the design space.
+            x (List[List[float]]): Parameters samples.
+            out (Dict[str, List[List[float]]]): Retruned dictionary (inspured by Pymoo).
 
         Returns:
-            List[List[float]]: A list of samples to be evaluated
+            Dict[str, List[List[float]]]: The evaluated samples, objectives and constraints.
         """
-        sampler = qmc.LatinHypercube(d=nvar)
-        samp = sampler.random(n=n_samples)
-        samples = qmc.scale(samp, lower_bounds, upper_bounds).tolist()
+        f = []
+        g = []
+        r = []
 
-        return samples
+        for sample in x:
+            parameters = {name: value for name, value in zip(self._pnames, sample)}
+            results = self._evaluator.evaluate(parameters)
+
+            objs = [obj(results) for obj in self._objectives]
+            consts = [constr(results) for constr in self._constraints]
+            res = list(results.values()) + objs + consts
+
+            f.append(objs)
+            g.append(consts)
+            r.append(res)
+
+        out["F"] = f
+        out["G"] = g
+        out["R"] = r
+
+        return out
 
 
 if __name__ == "__main__":
-    from evaluator import FEModelEvaluator
+    from simulator import Simulator
 
     problem = ProblemConstructor()
-    problem.set_objectives(["Disp^2"])
-    problem.set_contraints(["Disp-2"])
-    problem.set_bounds(
+    problem.setObjectives(["Disp^2"])
+    problem.setContraints(["Disp-2"])
+    problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
 
-    evaluator = FEModelEvaluator(
-        problem, ["Disp"], "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
+    simul = Simulator()
+    simulator = simul.generate(
+        "femSimulator",
+        "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd",
+        ["Disp"],
     )
 
-    sampler = LatinHypercube(problem, evaluator)
-    x, f, data = sampler.sample(4)
+    evaluator = Evaluator(["Disp"])
+    evaluator.setSimulator(simulator)
 
-    print(f"Data: {data}")
-    print("------------------")
+    sampler = Sampler(problem, evaluator)
+    samples, f, data = sampler.do("latinHypercube", 5)
 
-    surrogate, surrogate_performance = evaluator.generate_surrogate(
-        data, method="polynomal"
-    )
-
-    parameters = {"Length": 3050.0, "Width": 2200.0, "Height": 1001}
-
-    print(f"Surrogate performance: {surrogate_performance}")
-    print(f"Surrogate prediction: {evaluator.evaluate(parameters, use_surrogate=True)}")
+    print(data)

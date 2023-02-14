@@ -7,7 +7,6 @@ from numpy.random import randint
 
 
 class TestSurrogate(unittest.TestCase):
-
     data = DataFrame(randint(-10, 10, size=(20, 4)), columns=["x1", "f1", "f2", "f3"])
     x1 = Parameter("x1", 0, 2)
     f1 = Target("f1", 0.5, ineq=5, is_objective=True, is_constraint=True)

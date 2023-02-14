@@ -8,7 +8,6 @@ from pymoo.core.population import Population
 
 
 class TestOptimization(unittest.TestCase):
-
     p1 = Parameter("p1", 0, 3)
     f1 = Target("f1", 1, ineq=2, is_objective=True, is_constraint=False)
     f2 = Target("f2", 0.5, ineq=2, is_objective=False, is_constraint=True)

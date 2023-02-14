@@ -3,7 +3,6 @@ from src.utilities.types import Target
 
 
 class TestParameter(unittest.TestCase):
-
     f1 = Target(
         "f1",
         0.5,

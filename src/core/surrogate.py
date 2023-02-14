@@ -1,156 +1,141 @@
-from typing import Tuple
+from typing import Tuple, Dict, Callable
+from pickle import dump, load
+from os.path import isfile
 
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.linear_model import LinearRegression
-from sklearn.neural_network import MLPRegressor
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import PolynomialFeatures, SplineTransformer, StandardScaler
-from sklearn.svm import SVR
+from pandas import DataFrame
+from surrogates import Surrogates
+from sklearn.model_selection import cross_val_score
+
+from abstract import Blues
+from problem import ProblemConstructor
+from evaluator import Evaluator
 
 
-class Surrogate:
-    def polynomial(
+class Surrogate(Blues):
+    def __init__(
+        self, problem: ProblemConstructor, evaluator: Evaluator, data: DataFrame
+    ) -> None:
+        super().__init__(problem, evaluator)
+        parameterNames = problem.getPnames()
+        resultRequest = evaluator.getResultsRequest()
+        self.trainingData_x = data[parameterNames].values
+        self.trainingData_y = data[resultRequest].values
+
+        self.trainedSurrogate = None
+        self.resultRequest = resultRequest
+
+    def do(self, surrogateName: str, save: bool = False, **kwargs):
+        surrogateMethod = self._getGreen(Surrogates, surrogateName)(**kwargs)
+        trainedSurrogate, surrogatePerformance = self.train(
+            surrogateMethod, save=save, **kwargs
+        )
+        self.trainedSurrogate = trainedSurrogate
+
+        return self.predict, surrogatePerformance
+
+    def doFromFile(self, surrogatePath: str) -> Callable[(...), Dict[str, float]]:
+        try:  # Try to load surrogate from file
+            Surrogate._checkPath(
+                surrogatePath,
+                "No path to surrogate file specified. Please specify a path to load the surrogate.",
+            )
+            print(f"Trying to load surrogate from file... {surrogatePath}")
+            trainedSurrogate = load(open(surrogatePath, "rb"))
+            self.trainedSurrogate = trainedSurrogate
+        except FileNotFoundError:
+            raise ValueError(
+                "No surrogate has been generated. Run method generate_surrogate first."
+            )
+        return self.predict
+
+    def predict(self, parameters: Dict[str, float]) -> Dict[str, float]:
+        """Method to evaluate the surrogate model.
+
+        Args:
+            parameters (Dict[str, float]): A dicttionary of design parameters values and their aliases contained in the spreadsheet (names).
+
+        Raises:
+            ValueError: If no surrogate has been generated.
+
+        Returns:
+            Dict[str, float]: A dictionary containing results aliases and values.
+        """
+        if not self.trainedSurrogate:
+            raise ValueError(
+                "No surrogate has been generated. Use train() method first."
+            )
+        predictions = self.trainedSurrogate.predict([list(parameters.values())])  # type: ignore
+        results = dict(zip(self.resultRequest, predictions[0]))
+        return results
+
+    def train(
         self,
-        degree_fit: int = 2,
-        interaction_only: bool = False,
-        fit_intercept: bool = True,
-    ) -> Pipeline:
-        """_summary_
+        surrogateMethod,
+        save: bool = False,
+        **kwargs,
+    ) -> Tuple[object, Tuple[float, float]]:
+        trainedSurrogate = surrogateMethod.fit(self.trainingData_x, self.trainingData_y)
 
-        Args:
-            degree_fit (int, optional): The degree of the fitting polynomial. Defaults to 2.
-            interaction_only (bool, optional): If to consider design variable interactions. Defaults to False.
-            fit_intercept (bool, optional): Whether to fit the intercept. Defaults to True.
-
-        Returns:
-            Pipeline: A Scikit-Learn pipeline.
-        """
-        pipe = Pipeline(
-            [
-                ("scaler", StandardScaler()),
-                (
-                    "poly",
-                    PolynomialFeatures(
-                        degree=degree_fit,
-                        interaction_only=interaction_only,
-                    ),
-                ),
-                (
-                    "linear",
-                    LinearRegression(fit_intercept=fit_intercept),
-                ),
-            ]
+        n_data_rows = len(self.trainingData_x)
+        test_set_numdata = (
+            n_data_rows * 0.2
+        )  # 20% of the data is used for testing in cross validation.
+        n_kfold_splits = (
+            round(n_data_rows / test_set_numdata) if test_set_numdata > 2 else 2
         )
-        return pipe
-
-    def gaussian_process(self, kernel=None) -> Pipeline:
-        """_summary_
-
-        Args:
-            kernel (_type_, optional): Kernel for the Gauss process. Defaults to None.
-
-        Returns:
-            Pipeline: A Scikit-Learn pipeline.
-        """
-        pipe = Pipeline(
-            [
-                ("scaler", StandardScaler()),
-                (
-                    "gauss",
-                    GaussianProcessRegressor(kernel=kernel, random_state=0),
-                ),
-            ]
+        scores = cross_val_score(
+            trainedSurrogate,
+            self.trainingData_x,
+            self.trainingData_y,
+            cv=n_kfold_splits,
         )
-        return pipe
+        surrogatePerformance = (scores.mean(), scores.std())
 
-    def neural_network(
-        self,
-        n_nodes: Tuple[int, int] = (16, 8),
-        activation: str = "relu",
-        solver: str = "adam",
-        n_epochs: int = 1000,
-    ) -> Pipeline:
-        """_summary_
+        if save:
+            if not kwargs.get("surrogatePath"):
+                raise ValueError(
+                    "No path specified. Please specify a path to save the surrogate."
+                )
+            with open(kwargs.get("surrogatePath"), "wb") as f:  # type: ignore
+                dump(trainedSurrogate, f)
+            f.close()
 
-        Args:
-            n_nodes (Tuple[int, int], optional): NUmber of nodes in each layer. Defaults to (16, 8).
-            activation (str, optional): Activation function for the NN. Defaults to "relu".
-            solver (str, optional): The backpropagation optimizer. Defaults to "adam".
-            n_epochs (int, optional): The number of epochs. Defaults to 1000.
+        return trainedSurrogate, surrogatePerformance
 
-        Returns:
-            Pipeline: A Scikit-Learn pipeline.
-        """
-        pipe = Pipeline(
-            [
-                ("scaler", StandardScaler()),
-                (
-                    "mlp",
-                    MLPRegressor(
-                        hidden_layer_sizes=n_nodes,
-                        activation=activation,
-                        solver=solver,
-                        max_iter=n_epochs,
-                        early_stopping=True,
-                    ),
-                ),
-            ]
-        )
-        return pipe
+    @staticmethod
+    def _checkPath(path: str, *args) -> None:
+        if not isfile(path):
+            raise FileNotFoundError(args[0])
 
-    def support_vector_machine(
-        self, kernel: str = "rbf", degree_fit: int = 2
-    ) -> Pipeline:
-        """_summary_
 
-        Args:
-            kernel (str, optional): The Kernel of the SVM. Defaults to "rbf".
-            degree_fit (int, optional): The degree of the fitting polynomial. Defaults to 2.
+if __name__ == "__main__":
+    from simulator import Simulator
+    from sampler import Sampler
 
-        Returns:
-            Pipeline: A Scikit-Learn pipeline.
-        """
-        pipe = Pipeline(
-            [
-                ("scaler", StandardScaler()),
-                (
-                    "svr",
-                    SVR(
-                        kernel=kernel,
-                        degree=degree_fit,
-                    ),
-                ),
-            ]
-        )
-        return pipe
+    problem = ProblemConstructor()
+    problem.setObjectives(["Disp^2"])
+    problem.setContraints(["Disp-2"])
+    problem.setBounds(
+        {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
+    )
 
-    def spline(
-        self, n_knots: int = 2, degree_fit: int = 2, fit_intercept: bool = True
-    ) -> Pipeline:
-        """_summary_
+    simul = Simulator()
+    simulator = simul.generate(
+        "femSimulator",
+        "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd",
+        ["Disp"],
+    )
 
-        Args:
-            n_knots (int, optional): Number of spline knots. Defaults to 2.
-            degree_fit (int, optional): The degree of the fitting polynomial. Defaults to 2.
-            fit_intercept (bool, optional): Whether to fit the intercept. Defaults to True.
+    evaluator = Evaluator(["Disp"])
+    evaluator.setSimulator(simulator)
 
-        Returns:
-            Pipeline: A Scikit-Learn pipeline.
-        """
-        pipe = Pipeline(
-            [
-                ("scaler", StandardScaler()),
-                (
-                    "spline",
-                    SplineTransformer(
-                        n_knots=n_knots,
-                        degree=degree_fit,
-                    ),
-                ),
-                (
-                    "linear",
-                    LinearRegression(fit_intercept=fit_intercept),
-                ),
-            ]
-        )
-        return pipe
+    sampler = Sampler(problem, evaluator)
+    samples, f, data = sampler.do("latinHypercube", 15)
+
+    print(data)
+
+    surrogate = Surrogate(problem, evaluator, data)
+    predict, surrogatePerformance = surrogate.do("polynomial", degree_fit=3)
+
+    print(predict({"Length": 1000, "Width": 500, "Height": 1000}))
+    print(surrogatePerformance)

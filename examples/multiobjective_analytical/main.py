@@ -2,7 +2,6 @@ from problem import ProblemConstructor
 from optimizer import NSGA_III
 
 if __name__ == "__main__":
-
     obj_expression = ["Disp", "Mass"]
     const_expression = ["Mass-1"]
 

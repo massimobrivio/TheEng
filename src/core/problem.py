@@ -1,5 +1,5 @@
 from typing import Callable, Dict, List, Tuple, Iterable
-from utilities import expression_parser, expression_evaluator
+import operator
 
 
 class ProblemConstructor:
@@ -9,73 +9,73 @@ class ProblemConstructor:
         """Initialize the ProblemConstructor class."""
 
         self._objectives = []
-        self.objectives_expressions = []
-        self._lower_bounds = []
-        self._upper_bounds = []
-        self.bounds_expressions = []
+        self.objectivesExpressions = []
+        self._loweBounds = []
+        self._upperBounds = []
+        self.boundsExpressions = []
         self._constraints = []
-        self.constraints_expressions = []
+        self.constraintsExpressions = []
 
         self.nobj = 0
         self.nconst = 0
         self.nvar = 0
         self.pnames = []
 
-    def set_objectives(self, expressions: List[str]) -> None:
+    def setObjectives(self, expressions: List[str]) -> None:
         """Set the objectives of the problem.
 
         Args:
             expressions (List[str]): List of expressions encoded as strings.
         """
 
-        ProblemConstructor._check_expressions(expressions)
+        ProblemConstructor._checkExpressions(expressions)
 
         for expression in expressions:
-            operands, operations = expression_parser(expression)
+            operands, operations = ProblemConstructor._expressionParser(expression)
             self._objectives.append(
-                lambda results, operands=operands, operations=operations: expression_evaluator(
+                lambda results, operands=operands, operations=operations: ProblemConstructor._expressionEvaluator(
                     results, operands, operations
                 )
             )
             self.nobj += 1
-        self.objectives_expressions = expressions
+        self.objectivesExpressions = expressions
 
-    def set_contraints(self, expressions: List[str]) -> None:
+    def setContraints(self, expressions: List[str]) -> None:
         """Set the constraints of the problem.
 
         Args:
             expressions (List[str]): List of expressions encoded as strings. They will be considered <= 0.
         """
 
-        ProblemConstructor._check_expressions(expressions)
+        ProblemConstructor._checkExpressions(expressions)
 
         for expression in expressions:
-            operands, operations = expression_parser(expression)
+            operands, operations = ProblemConstructor._expressionParser(expression)
             self._constraints.append(
-                lambda results, operands=operands, operations=operations: expression_evaluator(
+                lambda results, operands=operands, operations=operations: ProblemConstructor._expressionEvaluator(
                     results, operands, operations
                 )
             )
             self.nconst += 1
-        self.constraints_expressions = expressions
+        self.constraintsExpressions = expressions
 
-    def set_bounds(self, bounds: Dict[str, Tuple[float, float]]) -> None:
+    def setBounds(self, bounds: Dict[str, Tuple[float, float]]) -> None:
         """Set the bounds of the problem.
 
         Args:
             bounds (Dict[str, Tuple[float, float]]): A dictionary of the form {parameter: (lower_bound, upper_bound)}
         """
 
-        ProblemConstructor._check_bounds(bounds)
+        ProblemConstructor._checkBounds(bounds)
 
         for key, value in bounds.items():
-            self._lower_bounds.append(value[0])
-            self._upper_bounds.append(value[1])
-            self.bounds_expressions.append(f"{value[0]} <= {key} <= {value[1]}")
+            self._loweBounds.append(value[0])
+            self._upperBounds.append(value[1])
+            self.boundsExpressions.append(f"{value[0]} <= {key} <= {value[1]}")
             self.nvar += 1
             self.pnames.append(key)
 
-    def get_objectives(self) -> List[Callable[(...), float]]:
+    def getObjectives(self) -> List[Callable[(...), float]]:
         """Returns a list of callables to evaluate the objectives of the problem.
 
         Returns:
@@ -83,7 +83,7 @@ class ProblemConstructor:
         """
         return self._objectives
 
-    def get_constraints(self) -> List[Callable[(...), float]]:
+    def getConstraints(self) -> List[Callable[(...), float]]:
         """Returns a list of callables to evaluate the constraints of the problem.
 
         Returns:
@@ -91,15 +91,15 @@ class ProblemConstructor:
         """
         return self._constraints
 
-    def get_bounds(self) -> Tuple[List[float], List[float]]:
+    def getBounds(self) -> Tuple[List[float], List[float]]:
         """Returns the lower and upper bounds of the problem.
 
         Returns:
             Tuple[List[float], List[float]]: List of lower bounds and list of upper bounds.
         """
-        return self._lower_bounds, self._upper_bounds
+        return self._loweBounds, self._upperBounds
 
-    def get_pnames(self) -> List[str]:
+    def getPnames(self) -> List[str]:
         """Returns the names of the parameters.
 
         Returns:
@@ -107,7 +107,7 @@ class ProblemConstructor:
         """
         return self.pnames
 
-    def get_nobj(self) -> int:
+    def getNobj(self) -> int:
         """Returns the number of objectives.
 
         Returns:
@@ -115,7 +115,7 @@ class ProblemConstructor:
         """
         return self.nobj
 
-    def get_nconst(self) -> int:
+    def getNconst(self) -> int:
         """Returns the number of constraints.
 
         Returns:
@@ -123,7 +123,7 @@ class ProblemConstructor:
         """
         return self.nconst
 
-    def get_nvar(self) -> int:
+    def getNvar(self) -> int:
         """Returns the number of variables.
 
         Returns:
@@ -131,24 +131,117 @@ class ProblemConstructor:
         """
         return self.nvar
 
-    def get_objectives_expressions(self) -> List[str]:
+    def getObjectivesExpressions(self) -> List[str]:
         """Returns the list of objectives expressions.
 
         Returns:
             List[str]: A list of objectives expressions.
         """
-        return self.objectives_expressions
+        return self.objectivesExpressions
 
-    def get_constraints_expressions(self) -> List[str]:
+    def getConstraintsExpressions(self) -> List[str]:
         """Returns the list of constraints expressions.
 
         Returns:
             List[str]: A list of constraints expressions.
         """
-        return self.constraints_expressions
+        return self.constraintsExpressions
 
     @staticmethod
-    def _check_expressions(expression: List[str]) -> bool:
+    def _expressionParser(expression: str) -> Tuple[List[str], List[str]]:
+        """Parse an expression into a list of operands and a list of operations.
+
+        Args:
+            expression (str): The expression to parse.
+
+        Returns:
+            Tuple[List[str], List[str]]: A tuple of (operands, operations)
+        """
+        expression = expression.replace(" ", "")
+        operators = set("^+-*/")
+        operations = (
+            []
+        )  # This holds the operators that are found in the string (left to right)
+        operands = (
+            []
+        )  # this holds the non-operators that are found in the string (left to right)
+        buff = []
+        for c in expression:  # examine 1 character at a time
+            if c in operators:
+                # found an operator.  Everything we've accumulated in `buff` is
+                # a single "number". Join it together and put it in `operands`.
+                operands.append("".join(buff))
+                buff = []
+                operations.append(c)
+            else:
+                # not an operator.  Just accumulate this character in buff.
+                buff.append(c)
+        operands.append("".join(buff))
+        return operands, operations
+
+    @staticmethod
+    def _expressionEvaluator(
+        results: Dict[str, float], operands: List[str], operations: List[str]
+    ) -> float:
+        """Evaluate an expression given its operands and operations.
+
+        Args:
+            operands (List[str]): List of operands in the expression.
+            operations (List[str]): List of operations in the expression.
+            results (Dict[str, float]): Dictionary of results from the simulator.
+
+        Raises:
+            ValueError: When a operand used in the expression is not known.
+
+        Returns:
+            float: Result of the expression.
+        """
+
+        operands_values = []
+        for operand in operands:
+            if operand in results:
+                operands_values.append(results[operand])
+            elif operand == "":
+                operands_values.append(0)
+            elif ProblemConstructor._testFloat(operand):
+                operands_values.append(float(operand))
+            else:
+                raise ValueError(f"Unknown operand {operand}")
+
+        operator_order = (
+            "^",
+            "*/",
+            "+-",
+        )  # precedence from left to right.  operators at same index have same precendece.
+        # map operators to functions.
+        op_dict = {
+            "*": operator.mul,
+            "/": operator.truediv,
+            "+": operator.add,
+            "-": operator.sub,
+            "^": operator.pow,
+        }
+
+        operations_copy = operations.copy()
+
+        for op in operator_order:  # Loop over precedence levels
+            while any(
+                o in operations_copy for o in op
+            ):  # Operator with this precedence level exists
+                idx, oo = next(
+                    (i, o) for i, o in enumerate(operations_copy) if o in op
+                )  # Next operator with this precedence
+                operations_copy.pop(idx)  # remove this operator from the operator list
+                values = map(
+                    float, operands_values[idx : idx + 2]
+                )  # here I just assume float for everything
+                value = op_dict[oo](*values)
+                operands_values[idx : idx + 2] = [value]  # clear out those indices
+
+        return operands_values[0]
+
+    @staticmethod
+    def _checkExpressions(expressions: List[str]) -> bool:
         """_summary_
 
         Args:
@@ -160,13 +253,13 @@ class ProblemConstructor:
         Returns:
             bool: True if all expressions are encoded as strings.
         """
-        if all([isinstance(exp, str) for exp in expression]):
+        if all([isinstance(exp, str) for exp in expressions]):
             return True
         else:
             raise TypeError("The expressions must be encoded as strings.")
 
     @staticmethod
-    def _check_bounds(bounds: Dict[str, Tuple[float, float]]) -> bool:
+    def _checkBounds(bounds: Dict[str, Tuple[float, float]]) -> bool:
         """_summary_
 
         Args:
@@ -200,6 +293,22 @@ class ProblemConstructor:
         else:
             raise TypeError("The bounds must be encoded as a dictionary.")
 
+    @staticmethod
+    def _testFloat(x: str) -> bool:
+        """Test if a string can be converted to a float.
+
+        Args:
+            x (str): String to be tested.
+
+        Returns:
+            bool: True if the string can be converted to a float, False otherwise.
+        """
+        try:
+            float(x)
+            return True
+        except ValueError:
+            return False
+
 
 if __name__ == "__main__":
     bounds = {"x": (5, 10), "y": (6, 12), "z": (0, 3)}
@@ -208,20 +317,20 @@ if __name__ == "__main__":
     constr_expressions = ["Disp - 2", "Disp + B + C", "Disp * B * C"]
 
     problem = ProblemConstructor()
-    problem.set_objectives(obj_expressions)
-    problem.set_contraints(constr_expressions)
-    problem.set_bounds(bounds)
+    problem.setObjectives(obj_expressions)
+    problem.setContraints(constr_expressions)
+    problem.setBounds(bounds)
 
-    for i, obj in enumerate(problem.get_objectives()):
+    for i, obj in enumerate(problem.getObjectives()):
         print(f"Objective Value nr. {i}: {obj(results)}")
-        print(f"Objective Expression nr. {i}: {problem.objectives_expressions[i]}")
+        print(f"Objective Expression nr. {i}: {problem.objectivesExpressions[i]}")
     print("\n\n")
-    for i, constr in enumerate(problem.get_constraints()):
+    for i, constr in enumerate(problem.getConstraints()):
         print(f"Constraint nr. {i}: {constr(results)}")
-        print(f"Constraint Expression nr. {i}: {problem.constraints_expressions[i]}")
+        print(f"Constraint Expression nr. {i}: {problem.constraintsExpressions[i]}")
     print("\n\n")
     i = 0
-    for lb, ub in zip(*problem.get_bounds()):
+    for lb, ub in zip(*problem.getBounds()):
         print(f"Bound nr. {i}: {lb} - {ub}")
-        print(f"Bound Expression nr. {i}: {problem.bounds_expressions[i]}")
+        print(f"Bound Expression nr. {i}: {problem.boundsExpressions[i]}")
         i += 1

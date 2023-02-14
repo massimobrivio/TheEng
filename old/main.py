@@ -108,7 +108,6 @@ class AiDev:
             self.data.to_csv(join(self.path, "db.csv"), index=False, mode="w")
 
         if optimization:
-
             if restart:
                 if isfile(join(self.path, "restart.pkl")):
                     restart_pop = load(join(self.path, "restart.pkl"))

@@ -8,7 +8,6 @@ from problem_objective import objective_1, objective_2, objective_3
 
 
 class TestProblem(unittest.TestCase):
-
     x1 = Parameter("x1", -2.0, 2.0)
     x2 = Parameter("x2", -2.0, 2.0)
     f1 = Target("f1", 0.5, ineq=5.0, is_objective=True, is_constraint=True)

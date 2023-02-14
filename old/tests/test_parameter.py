@@ -3,7 +3,6 @@ from src.utilities.types import Parameter
 
 
 class TestParameter(unittest.TestCase):
-
     p1 = Parameter("p1", 0, 1)
 
     def test_state(self):

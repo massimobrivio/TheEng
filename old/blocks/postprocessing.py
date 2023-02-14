@@ -215,7 +215,6 @@ class Convergence(Visualization):
         figname: str = "convergence.html",
         **kwargs,
     ):
-
         self.weights = []
         self.onames = []
 

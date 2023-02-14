@@ -1,88 +1,65 @@
-# -*- coding: utf-8 -*-
-
-# Macro Begin: C:\Users\brivio\Desktop\Interface.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
-import json
-import sys
-from collections import defaultdict
-from typing import Dict, List
-
-from abstract import Evaluator
-from problem import ProblemConstructor
-
-f = open("configs\\settings.json")
-data = json.load(f)
-sys.path.append(data["FREECAD_PATH"])
-
-import FreeCAD
-from femtools import ccxtools
+from typing import Callable, Dict, List, Iterable, Union
+from os.path import isfile
 
 
-class FEModelEvaluator(Evaluator):
-    def __init__(
-        self,
-        problem: ProblemConstructor,
-        results_request: List[str],
-        path_to_fcd_file: str,
-    ) -> None:
-        """Initialize an FEM evaluator.
+class Evaluator:
+    """class for evaluators."""
+
+    def __init__(self, resultsRequest: List[str]) -> None:
+        """Initialize evaluator.
 
         Args:
-            problem (ProblemConstructor): problem to be evaluated.
-            results_request (List[str]): list of results aliases contained in the spreadsheet.
-            path_to_fcd_file (str): path to the FreeCAD file containing the model.
+            resultsRequest (List[str]): A list of results aliases contained in the spreadsheet which are to be returned.
+            fcdPath (str): The path to the FreeCAD file containing the model.
+            surrogatePath (Union[str, None], optional): The path to the surrogate file. Defaults to None.
+
         """
-        super().__init__(problem, results_request, path_to_fcd_file)
-        self.doc = FreeCAD.open(self.path_to_fcd_file)
-        self.sheet = self.doc.getObject("Spreadsheet")
 
-    def _evaluateSimulator(self, parameters: Dict[str, float]) -> Dict[str, float]:
-        """Evaluate the design parameters and return the results by updating the spreadsheet and running the FEM analysis in FreeCAD.
+        Evaluator._checkList(
+            resultsRequest,
+            str,
+            "results_request must be iterable.",
+            "results_request must contain strings.",
+        )
+
+        self.surrogate = None
+        self.simulator = None
+        self.resultsRequest = resultsRequest
+
+    def evaluate(
+        self, parameters: Dict[str, float], useSurrogate=False
+    ) -> Dict[str, float]:
+        """A method to evaluate the design parameters and return the results. Both the simulator and the surrogate can be used.
 
         Args:
-            parameters (Dict[str, float]): dictionary of design parameters containing aliases and values contained in the spreadsheet.
+            parameters (Dict[str, float]): A dicttionary of design parameters values and their aliases contained in the spreadsheet (names).
+            useSurrogate (bool, optional): Wether to use a surrogate instead of the simulator. Defaults to False.
 
         Returns:
-            Dict[str, float]: dictionary containing results aliases and values.
+            Dict[str, float]: A dictionary containing results aliases and values.
         """
-
-        for key, value in parameters.items():
-            self.sheet.set(key, str(value))
-
-        self.sheet.recompute()
-        self.doc.recompute()
-
-        fea = ccxtools.FemToolsCcx()
-        fea.update_objects()
-        fea.setup_working_dir()
-        fea.setup_ccx()
-        message = fea.check_prerequisites()
-        if not message:
-            fea.purge_results()
-            fea.write_inp_file()
-            fea.ccx_run()
-            fea.load_results()
+        if useSurrogate:
+            return self.surrogate(parameters)  # type: ignore
         else:
-            print(
-                "Houston, we have a problem! {}\n".format(message)
-            )  # in Python console
+            return self.simulator(parameters)  # type: ignore
 
-        self.sheet.recompute()
-        results = defaultdict(float)
-        for result in self.results_request:
-            results[result] = self.sheet.get(result)
+    def setSurrogate(self, surrogate: Callable[(...), Dict[str, float]]):
+        self.surrogate = surrogate
 
-        return results
+    def setSimulator(self, simulator: Callable[(...), Dict[str, float]]):
+        self.simulator = simulator
 
+    def getResultsRequest(self) -> List[str]:
+        return self.resultsRequest
 
-class CFDModelEvaluator(Evaluator):
-    def __init__(
-        self,
-        problem: ProblemConstructor,
-        results_request: List[str],
-        path_to_fcd_file: str,
-    ) -> None:
-        super().__init__(problem, results_request, path_to_fcd_file)
-        raise NotImplementedError("CFDModelEvaluator is not implemented yet.")
+    @staticmethod
+    def _checkPath(path: str, *args) -> None:
+        if not isfile(path):
+            raise FileNotFoundError(args[0])
 
-    def _evaluateSimulator(self):
-        pass
+    @staticmethod
+    def _checkList(list: List[str], type: Callable, *args) -> None:
+        if not isinstance(list, Iterable):
+            raise TypeError(args[0])
+        if not all([isinstance(result, type) for result in list]):
+            raise TypeError(args[1])

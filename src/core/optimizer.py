@@ -1,121 +1,149 @@
-from typing import Union
+from typing import Tuple
 
-from abstract import Evaluator, Optimizer
+from evaluator import Evaluator
+from numpy import concatenate
+from optimizers import Optimizers
+from pandas import DataFrame
 from problem import ProblemConstructor
-from pymoo.algorithms.moo.unsga3 import NSGA3
-from pymoo.algorithms.soo.nonconvex.ga import GA
-from pymoo.algorithms.soo.nonconvex.nelder import NelderMead
-from pymoo.algorithms.soo.nonconvex.pso import PSO
-from pymoo.core.population import Population
-from pymoo.factory import get_reference_directions
-from pymoo.operators.sampling.rnd import FloatRandomSampling
+from pymoo.core.callback import Callback
+from pymoo.core.problem import ElementwiseProblem
+from pymoo.optimize import minimize
+
+from abstract import Blues
 
 
-class NelderMeadSearch(Optimizer):
-    def __init__(
-        self, problem_constructor: ProblemConstructor, evaluator: Evaluator
-    ) -> None:
-        """Nelder-Mead search algorithm.
+class Optimizer(Blues):
+    def __init__(self, problem: ProblemConstructor, evaluator: Evaluator) -> None:
+        super().__init__(problem, evaluator)
 
-        Args:
-            problem_constructor (ProblemConstructor): The problem to be solved.
-            evaluator (Evaluator): The evaluator to be used.
-        """
-        super().__init__(problem_constructor, evaluator)
-
-    def _algorithm(self):
-        return NelderMead()
-
-
-class GeneticAlgorithm(Optimizer):
-    def __init__(
+    def do(
         self,
-        problem_constructor: ProblemConstructor,
-        evaluator: Evaluator,
-        popsize: int,
-        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
-    ) -> None:
-        """Genetic algorithm.
+        optimizerName: str,
+        termination: Tuple[str, int],
+        useSurrogate: bool = False,
+        **kwargs
+    ):
+        problem = OptimizationProblem(
+            self.problem, self.evaluator, useSurrogate=useSurrogate
+        )
+        algorithm = self._getGreen(Optimizers, optimizerName)(**kwargs)
 
-        Args:
-            problem_constructor (ProblemConstructor): The problem to be solved.
-            evaluator (Evaluator): The evaluator to be used.
-            popsize (int): The population for the stocastic algorthm.
-            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm.
-        """
-        self.popsize = popsize
-        super().__init__(problem_constructor, evaluator, restart_pop)
-
-    def _algorithm(self):
-        return GA(pop_size=self.popsize, eliminate_duplicates=True, sampling=self.restart_pop)  # type: ignore
-
-
-class ParticleSwarm(Optimizer):
-    def __init__(
-        self,
-        problem_constructor: ProblemConstructor,
-        evaluator: Evaluator,
-        popsize: int,
-        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
-    ) -> None:
-        """Particle swarm optimization.
-
-        Args:
-            problem_constructor (ProblemConstructor): The problem to be solved.
-            evaluator (Evaluator): The evaluator to be used.
-            popsize (int): The population for the stocastic algorthm.
-            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm.
-        """
-        self.popsize = popsize
-        super().__init__(problem_constructor, evaluator, restart_pop)
-
-    def _algorithm(self):
-        return PSO(pop_size=self.popsize, sampling=self.restart_pop)  # type: ignore
-
-
-class NSGA_III(Optimizer):
-    def __init__(
-        self,
-        problem_constructor: ProblemConstructor,
-        evaluator: Evaluator,
-        popsize: int,
-        restart_pop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
-    ) -> None:
-        """Non-dominated sorting genetic algorithm III.
-
-        Args:
-            problem_constructor (ProblemConstructor): The problem to be solved.
-            evaluator (Evaluator): The evaluator to be used.
-            popsize (int): The population for the stocastic algorthm.
-            restart_pop (Union[FloatRandomSampling, Population], optional): A restart population for the Pymoo algorithm.
-        """
-        self.popsize = popsize
-        super().__init__(problem_constructor, evaluator, restart_pop)
-
-    def _algorithm(self):
-        nobj = self.problem_constructor.get_nobj()
-        ref_dirs = get_reference_directions("energy", nobj, n_points=nobj + 1, seed=1)
-        algorithm = NSGA3(
-            pop_size=self.popsize, ref_dirs=ref_dirs, eliminate_duplicates=True, sampling=self.restart_pop  # type: ignore
+        res = minimize(
+            problem,
+            algorithm,
+            termination=termination,
+            seed=1,
+            callback=HistCallback(),
+            return_least_infeasible=True,
         )
 
-        return algorithm
+        x = res.X.tolist()
+        f = res.F.tolist()
+        x_hist = concatenate(res.algorithm.callback.data["x_hist"]).tolist()
+        r_hist = concatenate(res.algorithm.callback.data["r_hist"]).tolist()
+
+        data = concatenate([x_hist, r_hist], axis=1)
+        data = DataFrame(
+            data,
+            columns=self.pname
+            + self.resultsExpressions
+            + self.objectiveExpressions
+            + self.constraintExpressions,
+        )
+
+        data = data.T.drop_duplicates().T  # drop duplicate columns
+
+        return x, f, data
+
+
+class OptimizationProblem(ElementwiseProblem):
+    def __init__(
+        self,
+        problem: ProblemConstructor,
+        evaluator: Evaluator,
+        useSurrogate: bool = False,
+    ):
+        """Initialize the optimization problem.
+
+        Args:
+            problem (ProblemConstructor): The problem to be evaluated.
+            evaluator (Evaluator): The evaluator to be used.
+        """
+
+        self._useSurrogate = useSurrogate
+        self._evaluator = evaluator
+
+        self._nvar = problem.getNvar()
+        self._nobj = problem.getNobj()
+        self._nconst = problem.getNconst()
+        self._pnames = problem.getPnames()
+
+        self._objectives = problem.getObjectives()
+        self._constraints = problem.getConstraints()
+        self._lowerBounds, self._upperBounds = problem.getBounds()
+
+        super().__init__(
+            n_var=self._nvar,
+            n_obj=self._nobj,
+            n_constr=self._nconst,
+            xl=self._lowerBounds,
+            xu=self._upperBounds,
+        )
+
+    def _evaluate(self, x, out: dict, *args, **kwargs):
+        """Evaluate the optimization problem on the given designs.
+
+        Args:
+            x (_type_): Design samples.
+            out (dict): dictionary containing the evaluated samples, objectives and constraints.
+        """
+
+        parameters = {name: value for name, value in zip(self._pnames, x)}
+        results = self._evaluator.evaluate(parameters, useSurrogate=self._useSurrogate)
+
+        f = [obj(results) for obj in self._objectives]
+        g = [constr(results) for constr in self._constraints]
+        r = list(results.values())
+
+        out["F"] = f
+        out["G"] = g
+        out["R"] = r + f + g
+
+
+class HistCallback(Callback):
+    """A class to store the all history of the optimization process."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.data["x_hist"] = []
+        self.data["r_hist"] = []
+
+    def notify(self, algorithm):
+        self.data["x_hist"].append(algorithm.pop.get("X"))
+        self.data["r_hist"].append(algorithm.pop.get("R"))
 
 
 if __name__ == "__main__":
-    from evaluator import FEModelEvaluator
+    from simulator import Simulator
 
     problem = ProblemConstructor()
-    problem.set_objectives(["Disp"])
-    problem.set_contraints(["Disp-2"])
-    problem.set_bounds(
+    problem.setObjectives(["Disp^2"])
+    problem.setContraints(["Disp-2"])
+    problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
 
-    evaluator = FEModelEvaluator(
-        problem, ["Disp"], "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
+    simul = Simulator()
+    simulator = simul.do(
+        "femSimulator",
+        "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd",
+        ["Disp"],
     )
 
-    optimizer = GeneticAlgorithm(problem, evaluator, 3)
-    x, f, data = optimizer.optimize(("n_eval", 6))
-    print(f"Data:\n {data}")
+    evaluator = Evaluator(["Disp"])
+    evaluator.setSimulator(simulator)
+
+    optimizer = Optimizer(problem, evaluator)
+    x, f, data = optimizer.do("geneticAlgorithm", ("n_eval", 6), popSize=3)
+
+    print(data)
