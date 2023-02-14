@@ -259,7 +259,7 @@ class ProblemConstructor:
             raise TypeError("The expressions must be encoded as strings.")
 
     @staticmethod
-    def _checkBounds(bounds: Dict[str, Tuple[float, float]]) -> bool:
+    def _checkBounds(bounds: Dict[str, Tuple[float, float]]) -> bool:  #type: ignore
         """_summary_
 
         Args:

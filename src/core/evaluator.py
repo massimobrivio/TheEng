@@ -61,5 +61,5 @@ class Evaluator:
     def _checkList(list: List[str], type: Callable, *args) -> None:
         if not isinstance(list, Iterable):
             raise TypeError(args[0])
-        if not all([isinstance(result, type) for result in list]):
+        if not all([isinstance(result, type) for result in list]):  # type: ignore
             raise TypeError(args[1])
