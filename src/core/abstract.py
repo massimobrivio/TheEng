@@ -111,9 +111,15 @@ class Evaluator(ABC):
         self.surrogate = pipe.fit(training_data_x, training_data_y)
 
         n_data_rows = len(data)
-        test_set_numdata = n_data_rows * 0.2  # 20% of the data is used for testing in cross validation.
-        n_kfold_splits = round(n_data_rows/test_set_numdata) if test_set_numdata > 2 else 2
-        scores = cross_val_score(self.surrogate, training_data_x, training_data_y, cv=n_kfold_splits)
+        test_set_numdata = (
+            n_data_rows * 0.2
+        )  # 20% of the data is used for testing in cross validation.
+        n_kfold_splits = (
+            round(n_data_rows / test_set_numdata) if test_set_numdata > 2 else 2
+        )
+        scores = cross_val_score(
+            self.surrogate, training_data_x, training_data_y, cv=n_kfold_splits
+        )
         self.surrogate_performance = (scores.mean(), scores.std())
 
         if save:

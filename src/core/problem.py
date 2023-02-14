@@ -186,7 +186,9 @@ class ProblemConstructor:
                 dim_check = value[0] < value[1]
 
                 if not dim_check:
-                    raise ValueError("The upper bound must be greater than the lower bound.")
+                    raise ValueError(
+                        "The upper bound must be greater than the lower bound."
+                    )
                 elif not number_check:
                     raise TypeError("The bounds values must be integers or floats.")
                 elif not value_check:

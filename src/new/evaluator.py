@@ -5,10 +5,7 @@ from os.path import isfile
 class Evaluator:
     """class for evaluators."""
 
-    def __init__(
-        self,
-        resultsRequest: List[str]
-    ) -> None:
+    def __init__(self, resultsRequest: List[str]) -> None:
         """Initialize evaluator.
 
         Args:
@@ -51,7 +48,7 @@ class Evaluator:
 
     def setSimulator(self, simulator: Callable[(...), Dict[str, float]]):
         self.simulator = simulator
-        
+
     def getResultsRequest(self) -> List[str]:
         return self.resultsRequest
 

@@ -9,16 +9,15 @@ from sklearn.svm import SVR
 
 
 class Surrogates:
-    
     def __init__(self) -> None:
         pass
-    
+
     def polynomial(
         self,
         degree_fit: int = 2,
         interaction_only: bool = False,
         fit_intercept: bool = True,
-    ) -> None:
+    ) -> Pipeline:
         """_summary_
 
         Args:
@@ -45,10 +44,10 @@ class Surrogates:
                 ),
             ]
         )
-        
+
         return pipeline
 
-    def gaussianProcess(self, kernel=None) -> None:
+    def gaussianProcess(self, kernel=None) -> Pipeline:
         """_summary_
 
         Args:
@@ -66,7 +65,7 @@ class Surrogates:
                 ),
             ]
         )
-        
+
         return pipeline
 
     def neuralNetwork(
@@ -75,7 +74,7 @@ class Surrogates:
         activation: str = "relu",
         solver: str = "adam",
         n_epochs: int = 1000,
-    ) -> None:
+    ) -> Pipeline:
         """_summary_
 
         Args:
@@ -102,12 +101,10 @@ class Surrogates:
                 ),
             ]
         )
-        
+
         return pipeline
 
-    def supportVector(
-        self, kernel: str = "rbf", degree_fit: int = 2
-    ) -> None:
+    def supportVector(self, kernel: str = "rbf", degree_fit: int = 2) -> Pipeline:
         """_summary_
 
         Args:
@@ -129,12 +126,12 @@ class Surrogates:
                 ),
             ]
         )
-        
+
         return pipeline
 
     def spline(
         self, n_knots: int = 2, degree_fit: int = 2, fit_intercept: bool = True
-    ) -> None:
+    ) -> Pipeline:
         """_summary_
 
         Args:
@@ -161,5 +158,5 @@ class Surrogates:
                 ),
             ]
         )
-        
+
         return pipeline

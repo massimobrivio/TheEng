@@ -1,23 +1,22 @@
-from samplers import Samplers
-from inspect import getmembers, ismethod
-from scipy.stats import qmc
-from typing import List, Tuple, Dict
-from difflib import SequenceMatcher
-from problem import ProblemConstructor
-from evaluator import Evaluator
 from collections import defaultdict
-from pandas import DataFrame
+from difflib import SequenceMatcher
+from inspect import getmembers, ismethod
+from typing import Dict, List, Tuple
+
+from evaluator import Evaluator
 from numpy import concatenate
+from pandas import DataFrame
+from problem import ProblemConstructor
+from samplers import Samplers
+from scipy.stats import qmc
 
 
 class Sampler:
-    def __init__(
-        self, problem: ProblemConstructor, evaluator: Evaluator
-    ) -> None:
-        
+    def __init__(self, problem: ProblemConstructor, evaluator: Evaluator) -> None:
+
         self.problem = problem
         self.evaluator = evaluator
-        
+
         self.pname = problem.getPnames()
         self.objectiveExpressions = problem.getObjectivesExpressions()
         self.constraintExpressions = problem.getConstraintsExpressions()
@@ -25,7 +24,7 @@ class Sampler:
         self.resultsExpressions = evaluator.getResultsRequest()
 
         self.nVar = len(self.pname)
-        
+
         self.sampler = None
 
     def sample(self, samplerName: str, nSamples: int):
@@ -149,9 +148,9 @@ class SamplingProblem:
 
 
 if __name__ == "__main__":
-    
-    from simulator import Simulator
+
     from sampler import Sampler
+    from simulator import Simulator
 
     problem = ProblemConstructor()
     problem.setObjectives(["Disp^2"])
@@ -159,17 +158,18 @@ if __name__ == "__main__":
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
-    
+
     simul = Simulator()
-    simulator = simul.generate("femSimulator", "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd", ["Disp"])
-    
+    simulator = simul.generate(
+        "femSimulator",
+        "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd",
+        ["Disp"],
+    )
+
     evaluator = Evaluator(["Disp"])
     evaluator.setSimulator(simulator)
-    
+
     sampler = Sampler(problem, evaluator)
     samples, f, data = sampler.sample("latinHypercube", 5)
-    
+
     print(data)
-    
-    
-    

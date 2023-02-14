@@ -71,4 +71,3 @@ class Simulators:
 
     def cfdSimulator(self, parameters: Dict[str, float]) -> Dict[str, float]:
         raise NotImplementedError("CFD interface is not implemented yet.")
-

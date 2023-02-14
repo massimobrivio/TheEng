@@ -19,9 +19,7 @@ class Surrogate:
         self.trainedSurrogate = None
         self.results_request = resultRequest
 
-    def generate(
-        self, surrogateName: str, save: bool = False, **kwargs
-    ):
+    def generate(self, surrogateName: str, save: bool = False, **kwargs):
         surrogateMethod = Surrogate._getSurrogate(surrogateName)
         trainedSurrogate, surrogatePerformance = self.train(
             surrogateMethod, save=save, **kwargs
@@ -61,7 +59,7 @@ class Surrogate:
             raise ValueError(
                 "No surrogate has been generated. Use train() method first."
             )
-        predictions = self.trainedSurrogate.predict([list(parameters.values())])  # type: ignore        
+        predictions = self.trainedSurrogate.predict([list(parameters.values())])  # type: ignore
         results = dict(zip(self.results_request, predictions[0]))
         return results
 
