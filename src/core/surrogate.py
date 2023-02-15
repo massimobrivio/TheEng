@@ -124,8 +124,7 @@ if __name__ == "__main__":
 
     simul = Simulator(problem)
     simulator = simul.do(
-        "femSimulator",
-        "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
+        "femSimulator", "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
     )
 
     sampler = Sampler(problem, simulator)
@@ -141,7 +140,7 @@ if __name__ == "__main__":
     xOpt, fOpt, dataOpt = optimizer.do("geneticAlgorithm", ("n_eval", 200), popSize=10)
 
     print("Optimizer data: \n", dataOpt)
-    
+
     xOpt, fOpt, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
 
     print("Optimizer data: \n", dataOpt)

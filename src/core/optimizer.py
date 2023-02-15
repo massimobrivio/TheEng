@@ -21,11 +21,12 @@ class Optimizer(Blues):
     def do(
         self, optimizerName: str, termination: Tuple[str, int], **kwargs
     ) -> Tuple[List[List[float]], List[List[float]], DataFrame]:
-        
         if self.nObj > 1:
             if not optimizerName == "nsga3":
-                raise Exception("Only NSGA3 is supported for multi-objective optimization. Use nsga3 name.")
-        
+                raise Exception(
+                    "Only NSGA3 is supported for multi-objective optimization. Use nsga3 name."
+                )
+
         problem = OptimizationProblem(self.problem, self.evaluator)
         algorithm = self._getGreen(Optimizers, optimizerName)(**kwargs, nObj=self.nObj)
 
@@ -40,12 +41,12 @@ class Optimizer(Blues):
 
         x = res.X.tolist()
         f = res.F.tolist()
-        
+
         if not isinstance(x[0], Iterable):
             x = [x]
         if not isinstance(f[0], Iterable):
             f = [f]
-            
+
         x_hist = concatenate(res.algorithm.callback.data["x_hist"]).tolist()
         r_hist = concatenate(res.algorithm.callback.data["r_hist"]).tolist()
 
@@ -67,7 +68,6 @@ class Optimizer(Blues):
         x: List[List[float]],
         simulator: Callable[[Dict[str, float]], Dict[str, float]],
     ) -> Tuple[List[List[float]], List[List[float]], DataFrame]:
-        
         f = []
         r = []
 
@@ -92,7 +92,7 @@ class Optimizer(Blues):
         )
 
         data = data.T.drop_duplicates().T
-        
+
         return x, f, data
 
 
