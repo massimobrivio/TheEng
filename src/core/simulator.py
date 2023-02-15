@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Callable
 
 from abstract import Blues
 from simulators import Simulators
@@ -8,7 +8,7 @@ class Simulator(Blues):
     def __init__(self) -> None:
         self.simulator = None
 
-    def do(self, simulatorName: str, fcdPath: str, resultsRequest: List[str]):
+    def do(self, simulatorName: str, fcdPath: str, resultsRequest: List[str]) -> Callable[[Dict[str, float]], Dict[str, float]]:
         simulator = self._getGreen(
             Simulators, simulatorName, fcdPath=fcdPath, resultsRequest=resultsRequest
         )

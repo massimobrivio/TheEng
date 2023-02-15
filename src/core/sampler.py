@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Tuple
 
 from abstract import Blues
 from numpy import concatenate
@@ -17,7 +17,9 @@ class Sampler(Blues):
     ) -> None:
         super().__init__(problem, evaluator)
 
-    def do(self, samplerName: str, nSamples: int):
+    def do(
+        self, samplerName: str, nSamples: int
+    ) -> Tuple[List[List[float]], List[List[float]], DataFrame]:
         problem = SamplingProblem(self.problem, self.evaluator)
 
         samplerMethod = self._getGreen(Samplers, samplerName, nVar=self.nVar)()

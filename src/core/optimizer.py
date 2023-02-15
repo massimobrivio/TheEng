@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, List, Tuple
 
 from abstract import Blues
 from numpy import concatenate
@@ -11,18 +11,17 @@ from pymoo.optimize import minimize
 
 
 class Optimizer(Blues):
-    def __init__(self, problem: ProblemConstructor, evaluator: Callable[[Dict[str, float]], Dict[str, float]]) -> None:
+    def __init__(
+        self,
+        problem: ProblemConstructor,
+        evaluator: Callable[[Dict[str, float]], Dict[str, float]],
+    ) -> None:
         super().__init__(problem, evaluator)
 
     def do(
-        self,
-        optimizerName: str,
-        termination: Tuple[str, int],
-        **kwargs
-    ):
-        problem = OptimizationProblem(
-            self.problem, self.evaluator
-        )
+        self, optimizerName: str, termination: Tuple[str, int], **kwargs
+    ) -> Tuple[List[List[float]], List[List[float]], DataFrame]:
+        problem = OptimizationProblem(self.problem, self.evaluator)
         algorithm = self._getGreen(Optimizers, optimizerName)(**kwargs)
 
         res = minimize(

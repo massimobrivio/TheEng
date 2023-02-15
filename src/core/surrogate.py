@@ -13,10 +13,8 @@ class Surrogate(Blues):
     def __init__(
         self,
         problem: ProblemConstructor,
-        evaluator: Callable[[Dict[str, float]], Dict[str, float]],
         data: DataFrame,
     ) -> None:
-        super().__init__(problem, evaluator)
         parameterNames = problem.getPnames()
         resultsExpressions = problem.getResultsExpressions()
         self.trainingData_x = data[parameterNames].values
@@ -25,7 +23,9 @@ class Surrogate(Blues):
         self.trainedSurrogate = None
         self.resultsExpressions = resultsExpressions
 
-    def do(self, surrogateName: str, save: bool = False, **kwargs):
+    def do(
+        self, surrogateName: str, save: bool = False, **kwargs
+    ) -> Tuple[Callable[[Dict[str, float]], Dict[str, float]], Tuple[float, float]]:
         surrogateMethod = self._getGreen(Surrogates, surrogateName)(**kwargs)
         trainedSurrogate, surrogatePerformance = self.train(
             surrogateMethod, save=save, **kwargs
@@ -134,7 +134,7 @@ if __name__ == "__main__":
 
     print("Sampling data: \n", data_samp)
 
-    surrog = Surrogate(problem, simulator, data_samp)
+    surrog = Surrogate(problem, data_samp)
     surrogate, surrogatePerformance = surrog.do("polynomial", degree_fit=3)
     print("Surrogate Performance: \n", surrogatePerformance)
 
