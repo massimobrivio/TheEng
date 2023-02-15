@@ -13,13 +13,14 @@ class Optimizers:
     def __init__(self) -> None:
         pass
 
-    def nelderMead(self):
+    def nelderMead(self, **kwargs):
         return NelderMead()
 
     def geneticAlgorithm(
         self,
         popSize: int,
         restartPop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
+        **kwargs
     ):
         return GA(pop_size=popSize, eliminate_duplicates=True, sampling=restartPop)  # type: ignore
 
@@ -27,6 +28,7 @@ class Optimizers:
         self,
         popSize: int,
         restartPop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
+        **kwargs
     ):
         return PSO(pop_size=popSize, sampling=restartPop)  # type: ignore
 
@@ -35,6 +37,7 @@ class Optimizers:
         popSize: int,
         nObj: int,
         restartPop: Union[FloatRandomSampling, Population] = FloatRandomSampling(),
+        **kwargs
     ):
         ref_dirs = get_reference_directions("energy", nObj, n_points=nObj + 1, seed=1)
         return NSGA3(pop_size=popSize, ref_dirs=ref_dirs, eliminate_duplicates=True, sampling=restartPop)  # type: ignore

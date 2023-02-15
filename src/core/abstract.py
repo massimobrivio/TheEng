@@ -24,6 +24,8 @@ class Blues(ABC):
         Blues._checkExpressions(resultsExpressions, "Results Names")
 
         self.pNames = pNames
+        self.objectives = problem.getObjectives()
+        self.constraints = problem.getConstraints()
         self.objectiveExpressions = objectiveExpressions
         self.constraintExpressions = problem.getConstraintsExpressions()
         self.resultsExpressions = resultsExpressions

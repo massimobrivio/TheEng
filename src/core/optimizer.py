@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple, Iterable
 
 from abstract import Blues
 from numpy import concatenate
@@ -21,8 +21,13 @@ class Optimizer(Blues):
     def do(
         self, optimizerName: str, termination: Tuple[str, int], **kwargs
     ) -> Tuple[List[List[float]], List[List[float]], DataFrame]:
+        
+        if self.nObj > 1:
+            if not optimizerName == "nsga3":
+                raise Exception("Only NSGA3 is supported for multi-objective optimization. Use nsga3 name.")
+        
         problem = OptimizationProblem(self.problem, self.evaluator)
-        algorithm = self._getGreen(Optimizers, optimizerName)(**kwargs)
+        algorithm = self._getGreen(Optimizers, optimizerName)(**kwargs, nObj=self.nObj)
 
         res = minimize(
             problem,
@@ -35,6 +40,12 @@ class Optimizer(Blues):
 
         x = res.X.tolist()
         f = res.F.tolist()
+        
+        if not isinstance(x[0], Iterable):
+            x = [x]
+        if not isinstance(f[0], Iterable):
+            f = [f]
+            
         x_hist = concatenate(res.algorithm.callback.data["x_hist"]).tolist()
         r_hist = concatenate(res.algorithm.callback.data["r_hist"]).tolist()
 
@@ -49,6 +60,39 @@ class Optimizer(Blues):
 
         data = data.T.drop_duplicates().T  # drop duplicate columns
 
+        return x, f, data
+
+    def convertToSimulator(
+        self,
+        x: List[List[float]],
+        simulator: Callable[[Dict[str, float]], Dict[str, float]],
+    ) -> Tuple[List[List[float]], List[List[float]], DataFrame]:
+        
+        f = []
+        r = []
+
+        for design in x:
+            parameters = {name: value for name, value in zip(self.pNames, design)}
+            results = simulator(parameters)
+
+            objs = [obj(results) for obj in self.objectives]
+            consts = [constr(results) for constr in self.constraints]
+            res = list(results.values()) + objs + consts
+
+            f.append(objs)
+            r.append(res)
+
+        data = concatenate([x, r], axis=1)
+        data = DataFrame(
+            data,
+            columns=self.pNames
+            + self.resultsExpressions
+            + self.objectiveExpressions
+            + self.constraintExpressions,
+        )
+
+        data = data.T.drop_duplicates().T
+        
         return x, f, data
 
 
@@ -130,8 +174,7 @@ if __name__ == "__main__":
 
     simul = Simulator(problem)
     simulator = simul.do(
-        "femSimulator",
-        "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
+        "femSimulator", "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
     )
 
     optimizer = Optimizer(problem, simulator)

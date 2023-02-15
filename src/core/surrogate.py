@@ -129,15 +129,19 @@ if __name__ == "__main__":
     )
 
     sampler = Sampler(problem, simulator)
-    xSamp, fSamp, dataSamp = sampler.do("latinHypercube", 15)
+    xSamp, fSamp, dataSamp = sampler.do("latinHypercube", 10)
 
-    print("Sampling data: \n", dataSamp)
+    # print("Sampling data: \n", dataSamp)
 
     surrog = Surrogate(problem, dataSamp)
     surrogate, surrogatePerformance = surrog.do("polynomial", degree_fit=3)
-    print("Surrogate Performance: \n", surrogatePerformance)
+    # print("Surrogate Performance: \n", surrogatePerformance)
 
     optimizer = Optimizer(problem, surrogate)
-    xOpt, fOpt, dataOpt = optimizer.do("geneticAlgorithm", ("n_eval", 500), popSize=10)
+    xOpt, fOpt, dataOpt = optimizer.do("geneticAlgorithm", ("n_eval", 200), popSize=10)
+
+    print("Optimizer data: \n", dataOpt)
+    
+    xOpt, fOpt, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
 
     print("Optimizer data: \n", dataOpt)

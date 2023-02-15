@@ -61,7 +61,7 @@ class SamplingProblem:
         self._evaluator = evaluator
 
         self._nVar = problem.getNvar()
-        self._pnames = problem.getPnames()
+        self._pNames = problem.getPnames()
 
         self._objectives = problem.getObjectives()
         self._constraints = problem.getConstraints()
@@ -84,7 +84,7 @@ class SamplingProblem:
         r = []
 
         for sample in x:
-            parameters = {name: value for name, value in zip(self._pnames, sample)}
+            parameters = {name: value for name, value in zip(self._pNames, sample)}
             results = self._evaluator(parameters)
 
             objs = [obj(results) for obj in self._objectives]
