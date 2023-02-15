@@ -17,7 +17,7 @@ from femtools import ccxtools
 class Simulators:
     def __init__(
         self,
-        resultsRequest: List[str],
+        resultsExpressions: List[str],
         fcdPath: str,
     ) -> None:
         """Initialize an FEM evaluator.
@@ -27,7 +27,7 @@ class Simulators:
             resultsRequest (List[str]): list of results aliases contained in the spreadsheet.
             fcdPath (str): path to the FreeCAD file containing the model.
         """
-        self.resultsRequest = resultsRequest
+        self.resultsExpressions = resultsExpressions
         self.doc = FreeCAD.open(fcdPath)
         self.sheet = self.doc.getObject("Spreadsheet")
 
@@ -64,7 +64,7 @@ class Simulators:
 
         self.sheet.recompute()
         results = defaultdict(float)
-        for result in self.resultsRequest:
+        for result in self.resultsExpressions:
             results[result] = self.sheet.get(result)
 
         return results

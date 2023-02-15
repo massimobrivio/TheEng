@@ -122,11 +122,10 @@ if __name__ == "__main__":
     )
     problem.setResults(["Disp"])
 
-    simul = Simulator()
+    simul = Simulator(problem)
     simulator = simul.do(
         "femSimulator",
-        "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd",
-        ["Disp"],
+        "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
     )
 
     sampler = Sampler(problem, simulator)
