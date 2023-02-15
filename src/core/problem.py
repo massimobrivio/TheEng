@@ -1,5 +1,5 @@
-from typing import Callable, Dict, List, Tuple, Iterable
 import operator
+from typing import Callable, Dict, Iterable, List, Tuple
 
 
 class ProblemConstructor:
@@ -15,6 +15,7 @@ class ProblemConstructor:
         self.boundsExpressions = []
         self._constraints = []
         self.constraintsExpressions = []
+        self.resultsExpressions = []
 
         self.nobj = 0
         self.nconst = 0
@@ -75,6 +76,16 @@ class ProblemConstructor:
             self.nvar += 1
             self.pnames.append(key)
 
+    def setResults(self, expressions: List[str]) -> None:
+        """Set the results to get from the simulation.
+
+        Args:
+            expressions (List[str]): List of results name as set in the FreeCAD spreadsheet.
+        """
+        ProblemConstructor._checkExpressions(expressions)
+
+        self.resultsExpressions = expressions
+
     def getObjectives(self) -> List[Callable[(...), float]]:
         """Returns a list of callables to evaluate the objectives of the problem.
 
@@ -98,6 +109,14 @@ class ProblemConstructor:
             Tuple[List[float], List[float]]: List of lower bounds and list of upper bounds.
         """
         return self._loweBounds, self._upperBounds
+
+    def getResultsExpressions(self) -> List[str]:
+        """Returns the names of the results from the simulation.
+
+        Returns:
+            List[str]: List of names of results.
+        """
+        return self.resultsExpressions
 
     def getPnames(self) -> List[str]:
         """Returns the names of the parameters.
@@ -259,7 +278,7 @@ class ProblemConstructor:
             raise TypeError("The expressions must be encoded as strings.")
 
     @staticmethod
-    def _checkBounds(bounds: Dict[str, Tuple[float, float]]) -> bool:  #type: ignore
+    def _checkBounds(bounds: Dict[str, Tuple[float, float]]) -> bool:  # type: ignore
         """_summary_
 
         Args:

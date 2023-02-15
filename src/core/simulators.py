@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 # Macro Begin: C:\Users\brivio\Desktop\Interface.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+from collections import defaultdict
 from json import load
 from sys import path
-from collections import defaultdict
 from typing import Dict, List
 
 f = open("configs\\settings.json")

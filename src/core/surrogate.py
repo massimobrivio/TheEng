@@ -1,28 +1,29 @@
-from typing import Tuple, Dict, Callable
-from pickle import dump, load
 from os.path import isfile
-
-from pandas import DataFrame
-from surrogates import Surrogates
-from sklearn.model_selection import cross_val_score
+from pickle import dump, load
+from typing import Callable, Dict, Tuple
 
 from abstract import Blues
+from pandas import DataFrame
 from problem import ProblemConstructor
-from evaluator import Evaluator
+from sklearn.model_selection import cross_val_score
+from surrogates import Surrogates
 
 
 class Surrogate(Blues):
     def __init__(
-        self, problem: ProblemConstructor, evaluator: Evaluator, data: DataFrame
+        self,
+        problem: ProblemConstructor,
+        evaluator: Callable[[Dict[str, float]], Dict[str, float]],
+        data: DataFrame,
     ) -> None:
         super().__init__(problem, evaluator)
         parameterNames = problem.getPnames()
-        resultRequest = evaluator.getResultsRequest()
+        resultsExpressions = problem.getResultsExpressions()
         self.trainingData_x = data[parameterNames].values
-        self.trainingData_y = data[resultRequest].values
+        self.trainingData_y = data[resultsExpressions].values
 
         self.trainedSurrogate = None
-        self.resultRequest = resultRequest
+        self.resultsExpressions = resultsExpressions
 
     def do(self, surrogateName: str, save: bool = False, **kwargs):
         surrogateMethod = self._getGreen(Surrogates, surrogateName)(**kwargs)
@@ -65,7 +66,7 @@ class Surrogate(Blues):
                 "No surrogate has been generated. Use train() method first."
             )
         predictions = self.trainedSurrogate.predict([list(parameters.values())])  # type: ignore
-        results = dict(zip(self.resultRequest, predictions[0]))
+        results = dict(zip(self.resultsExpressions, predictions[0]))
         return results
 
     def train(
@@ -109,8 +110,9 @@ class Surrogate(Blues):
 
 
 if __name__ == "__main__":
-    from simulator import Simulator
+    from optimizer import Optimizer
     from sampler import Sampler
+    from simulator import Simulator
 
     problem = ProblemConstructor()
     problem.setObjectives(["Disp^2"])
@@ -118,6 +120,7 @@ if __name__ == "__main__":
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
+    problem.setResults(["Disp"])
 
     simul = Simulator()
     simulator = simul.do(
@@ -126,16 +129,16 @@ if __name__ == "__main__":
         ["Disp"],
     )
 
-    evaluator = Evaluator(["Disp"])
-    evaluator.setSimulator(simulator)
+    sampler = Sampler(problem, simulator)
+    x_samp, f_samp, data_samp = sampler.do("latinHypercube", 10)
 
-    sampler = Sampler(problem, evaluator)
-    samples, f, data = sampler.do("latinHypercube", 15)
+    print("Sampling data: \n", data_samp)
 
-    print(data)
+    surrog = Surrogate(problem, simulator, data_samp)
+    surrogate, surrogatePerformance = surrog.do("polynomial", degree_fit=3)
+    print("Surrogate Performance: \n", surrogatePerformance)
 
-    surrogate = Surrogate(problem, evaluator, data)
-    predict, surrogatePerformance = surrogate.do("polynomial", degree_fit=3)
+    optimizer = Optimizer(problem, surrogate)
+    x_opt, f_opt, data_opt = optimizer.do("geneticAlgorithm", ("n_eval", 6), popSize=3)
 
-    print(predict({"Length": 1000, "Width": 500, "Height": 1000}))
-    print(surrogatePerformance)
+    print("Optimizer data: \n", data_opt)

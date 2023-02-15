@@ -1,23 +1,35 @@
 from abc import ABC, abstractmethod
-from problem import ProblemConstructor
-from evaluator import Evaluator
-from inspect import getmembers, ismethod
-from typing import List, Tuple, Callable
 from difflib import SequenceMatcher
+from inspect import getmembers, ismethod
+from typing import Callable, Dict, List, Tuple
+
+from problem import ProblemConstructor
 
 
 class Blues(ABC):
-    def __init__(self, problem: ProblemConstructor, evaluator: Evaluator):
+    def __init__(
+        self,
+        problem: ProblemConstructor,
+        evaluator: Callable[[Dict[str, float]], Dict[str, float]],
+    ):
         self.problem = problem
         self.evaluator = evaluator
 
-        self.pname = problem.getPnames()
-        self.objectiveExpressions = problem.getObjectivesExpressions()
-        self.constraintExpressions = problem.getConstraintsExpressions()
-        self.lowerBounds, self.upperBounds = problem.getBounds()
-        self.resultsExpressions = evaluator.getResultsRequest()
+        pNames = problem.getPnames()
+        objectiveExpressions = problem.getObjectivesExpressions()
+        resultsExpressions = problem.getResultsExpressions()
 
-        self.nVar = len(self.pname)
+        Blues._checkExpressions(pNames, "Parameters Names")
+        Blues._checkExpressions(objectiveExpressions, "Objectives Names")
+        Blues._checkExpressions(resultsExpressions, "Results Names")
+
+        self.pNames = pNames
+        self.objectiveExpressions = objectiveExpressions
+        self.constraintExpressions = problem.getConstraintsExpressions()
+        self.resultsExpressions = resultsExpressions
+        self.lowerBounds, self.upperBounds = problem.getBounds()
+
+        self.nVar = len(self.pNames)
 
     @abstractmethod
     def do(self, **kwargs):
@@ -63,3 +75,8 @@ class Blues(ABC):
         similarities = [similarity for _, similarity in similar_names_similarity]
 
         return similar_names, similarities
+
+    @staticmethod
+    def _checkExpressions(expressions: List[str], listName: str):
+        if not expressions:
+            raise ValueError(f"List of {listName} is empty.")

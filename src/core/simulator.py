@@ -1,7 +1,7 @@
-from typing import List, Dict
+from typing import Dict, List
 
-from simulators import Simulators
 from abstract import Blues
+from simulators import Simulators
 
 
 class Simulator(Blues):

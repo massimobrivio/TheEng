@@ -1,18 +1,20 @@
 from collections import defaultdict
-from typing import Dict, List
+from typing import Callable, Dict, List
 
-from evaluator import Evaluator
+from abstract import Blues
 from numpy import concatenate
 from pandas import DataFrame
 from problem import ProblemConstructor
 from samplers import Samplers
 from scipy.stats import qmc
 
-from abstract import Blues
-
 
 class Sampler(Blues):
-    def __init__(self, problem: ProblemConstructor, evaluator: Evaluator) -> None:
+    def __init__(
+        self,
+        problem: ProblemConstructor,
+        evaluator: Callable[[Dict[str, float]], Dict[str, float]],
+    ) -> None:
         super().__init__(problem, evaluator)
 
     def do(self, samplerName: str, nSamples: int):
@@ -20,18 +22,18 @@ class Sampler(Blues):
 
         samplerMethod = self._getGreen(Samplers, samplerName, nVar=self.nVar)()
         samp = samplerMethod.random(n=nSamples)
-        samples = qmc.scale(samp, self.lowerBounds, self.upperBounds).tolist()
+        x = qmc.scale(samp, self.lowerBounds, self.upperBounds).tolist()
 
         out = defaultdict(list)
-        res = problem._evaluate(samples, out)  # type: ignore
+        res = problem._evaluate(x, out)  # type: ignore
 
         f = res["F"]
         r = res["R"]
 
-        data = concatenate([samples, r], axis=1)
+        data = concatenate([x, r], axis=1)
         data = DataFrame(
             data,
-            columns=self.pname
+            columns=self.pNames
             + self.resultsExpressions
             + self.objectiveExpressions
             + self.constraintExpressions,
@@ -39,11 +41,15 @@ class Sampler(Blues):
 
         data = data.T.drop_duplicates().T
 
-        return samples, f, data
+        return x, f, data
 
 
 class SamplingProblem:
-    def __init__(self, problem: ProblemConstructor, evaluator: Evaluator):
+    def __init__(
+        self,
+        problem: ProblemConstructor,
+        evaluator: Callable[[Dict[str, float]], Dict[str, float]],
+    ):
         """Initialize the sampling problem.
 
         Args:
@@ -77,7 +83,7 @@ class SamplingProblem:
 
         for sample in x:
             parameters = {name: value for name, value in zip(self._pnames, sample)}
-            results = self._evaluator.evaluate(parameters)
+            results = self._evaluator(parameters)
 
             objs = [obj(results) for obj in self._objectives]
             consts = [constr(results) for constr in self._constraints]
@@ -103,6 +109,7 @@ if __name__ == "__main__":
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
+    problem.setResults(["Disp"])
 
     simul = Simulator()
     simulator = simul.do(
@@ -111,10 +118,7 @@ if __name__ == "__main__":
         ["Disp"],
     )
 
-    evaluator = Evaluator(["Disp"])
-    evaluator.setSimulator(simulator)
-
-    sampler = Sampler(problem, evaluator)
+    sampler = Sampler(problem, simulator)
     samples, f, data = sampler.do("latinHypercube", 5)
 
     print(data)

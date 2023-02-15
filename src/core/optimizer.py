@@ -1,6 +1,6 @@
-from typing import Tuple
+from typing import Callable, Dict, Tuple
 
-from evaluator import Evaluator
+from abstract import Blues
 from numpy import concatenate
 from optimizers import Optimizers
 from pandas import DataFrame
@@ -9,22 +9,19 @@ from pymoo.core.callback import Callback
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.optimize import minimize
 
-from abstract import Blues
-
 
 class Optimizer(Blues):
-    def __init__(self, problem: ProblemConstructor, evaluator: Evaluator) -> None:
+    def __init__(self, problem: ProblemConstructor, evaluator: Callable[[Dict[str, float]], Dict[str, float]]) -> None:
         super().__init__(problem, evaluator)
 
     def do(
         self,
         optimizerName: str,
         termination: Tuple[str, int],
-        useSurrogate: bool = False,
         **kwargs
     ):
         problem = OptimizationProblem(
-            self.problem, self.evaluator, useSurrogate=useSurrogate
+            self.problem, self.evaluator
         )
         algorithm = self._getGreen(Optimizers, optimizerName)(**kwargs)
 
@@ -45,7 +42,7 @@ class Optimizer(Blues):
         data = concatenate([x_hist, r_hist], axis=1)
         data = DataFrame(
             data,
-            columns=self.pname
+            columns=self.pNames
             + self.resultsExpressions
             + self.objectiveExpressions
             + self.constraintExpressions,
@@ -60,8 +57,7 @@ class OptimizationProblem(ElementwiseProblem):
     def __init__(
         self,
         problem: ProblemConstructor,
-        evaluator: Evaluator,
-        useSurrogate: bool = False,
+        evaluator: Callable[[Dict[str, float]], Dict[str, float]],
     ):
         """Initialize the optimization problem.
 
@@ -70,7 +66,6 @@ class OptimizationProblem(ElementwiseProblem):
             evaluator (Evaluator): The evaluator to be used.
         """
 
-        self._useSurrogate = useSurrogate
         self._evaluator = evaluator
 
         self._nvar = problem.getNvar()
@@ -99,7 +94,7 @@ class OptimizationProblem(ElementwiseProblem):
         """
 
         parameters = {name: value for name, value in zip(self._pnames, x)}
-        results = self._evaluator.evaluate(parameters, useSurrogate=self._useSurrogate)
+        results = self._evaluator(parameters)
 
         f = [obj(results) for obj in self._objectives]
         g = [constr(results) for constr in self._constraints]
@@ -132,6 +127,7 @@ if __name__ == "__main__":
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
+    problem.setResults(["Disp"])
 
     simul = Simulator()
     simulator = simul.do(
@@ -140,10 +136,7 @@ if __name__ == "__main__":
         ["Disp"],
     )
 
-    evaluator = Evaluator(["Disp"])
-    evaluator.setSimulator(simulator)
-
-    optimizer = Optimizer(problem, evaluator)
+    optimizer = Optimizer(problem, simulator)
     x, f, data = optimizer.do("geneticAlgorithm", ("n_eval", 6), popSize=3)
 
     print(data)
