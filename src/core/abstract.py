@@ -30,6 +30,7 @@ class Blues(ABC):
         self.lowerBounds, self.upperBounds = problem.getBounds()
 
         self.nVar = len(self.pNames)
+        self.nObj = len(self.objectiveExpressions)
 
     @abstractmethod
     def do(self, **kwargs):
