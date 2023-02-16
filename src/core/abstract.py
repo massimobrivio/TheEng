@@ -47,7 +47,7 @@ class Blues(ABC):
             )
             similarMethod = similarMethods[0]
             print(
-                f"Method {methodName} not available or misspelled. Using {similarMethod} instead.\n Matching percentage: {round(similarity_ratio[0]*100, 2)} %"
+                f"Method {methodName} not available or misspelled. Using {similarMethod} instead.\nMatching percentage: {round(similarity_ratio[0]*100, 2)} %"
             )
             methodName = similarMethod  # overwrite method with similar method
         samplerMethod = getattr(obj, methodName)

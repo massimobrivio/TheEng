@@ -113,6 +113,8 @@ if __name__ == "__main__":
     from optimizer import Optimizer
     from sampler import Sampler
     from simulator import Simulator
+    from visualization import Visualization
+    from pandas import concat
 
     problem = ProblemConstructor()
     problem.setObjectives(["Disp^2"])
@@ -144,3 +146,11 @@ if __name__ == "__main__":
     xOpt, fOpt, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
 
     print("Optimizer data: \n", dataOpt)
+
+    visualizer = Visualization(concat([dataSamp, dataOpt]))
+    visualizer.do("parallelCoordinates",
+                  "C:\\Users\\brivio\\Desktop\\parallel_coord.html",
+                  columnsNames=problem.getPnames()+problem.getObjectivesExpressions())
+    visualizer.do("heatMap",
+                  "C:\\Users\\brivio\\Desktop\\heatmap.html",
+                  columnsNames=problem.getPnames()+problem.getObjectivesExpressions())
