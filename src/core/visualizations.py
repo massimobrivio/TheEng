@@ -14,15 +14,22 @@ class Visualizations:
         return visualizationObject
 
     def heatMap(self, **kwargs) -> Figure:
-        columnsNames = kwargs.get("columnsNames")
-        filteredData = self.data[columnsNames]  # type: ignore
+        filteredData = self._filterData(**kwargs)
         visualizationObject = px.imshow(filteredData.corr(), text_auto=".1f")  # type: ignore
         return visualizationObject
 
     def parallelCoordinate(self, **kwargs) -> Figure:
-        columnsNames = kwargs.get("columnsNames")
-        filteredData = self.data[columnsNames]  # type: ignore
+        filteredData = self._filterData(**kwargs)
         visualizationObject = px.parallel_coordinates(
             filteredData, dimensions=list(filteredData.columns)
         )
         return visualizationObject
+
+    def _filterData(self, **kwargs):
+        columnsNames = kwargs.get("columnsNames")
+        if columnsNames:
+            filteredData = self.data[columnsNames]
+        else:
+            print("Using all data for visualization...")
+            filteredData = self.data
+        return filteredData

@@ -115,6 +115,9 @@ if __name__ == "__main__":
     from simulator import Simulator
     from visualization import Visualization
     from pandas import concat
+    from os.path import join
+
+    wd = "C:\\Users\\brivio\\Desktop\\"
 
     problem = ProblemConstructor()
     problem.setObjectives(["Disp^2"])
@@ -135,7 +138,7 @@ if __name__ == "__main__":
     # print("Sampling data: \n", dataSamp)
 
     surrog = Surrogate(problem, dataSamp)
-    surrogate, surrogatePerformance = surrog.do("polynomial", save=True, degree_fit=3, surrogatePath="C:\\Users\\brivio\\Desktop\\surrogate.pkl")
+    surrogate, surrogatePerformance = surrog.do("polynomial", save=True, degree_fit=3, surrogatePath=join(wd, "surrogate.pkl"))
     # print("Surrogate Performance: \n", surrogatePerformance)
 
     optimizer = Optimizer(problem, surrogate)
@@ -149,8 +152,7 @@ if __name__ == "__main__":
 
     visualizer = Visualization(concat([dataSamp, dataOpt]))
     visualizer.do("parallelCoordinates",
-                  "C:\\Users\\brivio\\Desktop\\parallel_coord.html",
+                  join(wd, "parallel_coord.html"),
                   columnsNames=problem.getPnames()+problem.getObjectivesExpressions())
     visualizer.do("heatMap",
-                  "C:\\Users\\brivio\\Desktop\\heatmap.html",
-                  columnsNames=problem.getPnames()+problem.getObjectivesExpressions())
+                  join(wd, "heatmap.html"))
