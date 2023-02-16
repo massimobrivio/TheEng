@@ -17,6 +17,7 @@ class Surrogates:
         degree_fit: int = 2,
         interaction_only: bool = False,
         fit_intercept: bool = True,
+        **kwargs
     ) -> Pipeline:
         """_summary_
 
@@ -47,7 +48,7 @@ class Surrogates:
 
         return pipeline
 
-    def gaussianProcess(self, kernel=None) -> Pipeline:
+    def gaussianProcess(self, kernel=None, **kwargs) -> Pipeline:
         """_summary_
 
         Args:
@@ -74,6 +75,7 @@ class Surrogates:
         activation: str = "relu",
         solver: str = "adam",
         n_epochs: int = 1000,
+        **kwargs
     ) -> Pipeline:
         """_summary_
 
@@ -104,7 +106,9 @@ class Surrogates:
 
         return pipeline
 
-    def supportVector(self, kernel: str = "rbf", degree_fit: int = 2) -> Pipeline:
+    def supportVector(
+        self, kernel: str = "rbf", degree_fit: int = 2, **kwargs
+    ) -> Pipeline:
         """_summary_
 
         Args:
@@ -130,7 +134,11 @@ class Surrogates:
         return pipeline
 
     def spline(
-        self, n_knots: int = 2, degree_fit: int = 2, fit_intercept: bool = True
+        self,
+        n_knots: int = 2,
+        degree_fit: int = 2,
+        fit_intercept: bool = True,
+        **kwargs
     ) -> Pipeline:
         """_summary_
 

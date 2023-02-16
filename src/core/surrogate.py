@@ -135,7 +135,7 @@ if __name__ == "__main__":
     # print("Sampling data: \n", dataSamp)
 
     surrog = Surrogate(problem, dataSamp)
-    surrogate, surrogatePerformance = surrog.do("polynomial", degree_fit=3)
+    surrogate, surrogatePerformance = surrog.do("polynomial", save=True, degree_fit=3, surrogatePath="C:\\Users\\brivio\\Desktop\\surrogate.pkl")
     # print("Surrogate Performance: \n", surrogatePerformance)
 
     optimizer = Optimizer(problem, surrogate)
