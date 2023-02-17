@@ -114,6 +114,7 @@ if __name__ == "__main__":
     from sampler import Sampler
     from simulator import Simulator
     from visualization import Visualization
+    from ranker import Ranker
     from pandas import concat
     from os.path import join
 
@@ -150,7 +151,14 @@ if __name__ == "__main__":
 
     print("Optimizer data: \n", dataOpt)
 
-    visualizer = Visualization(concat([dataSamp, dataOpt]))
+    ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(1, ))
+    dataRanked = ranker.do("simpleAdditive")
+
+    visualizer = Visualization(dataRanked)
+    visualizer.do("scatterPlot",
+                  join(wd, "scatter.html"),
+                  xName="Disp",
+                  yName="Disp^2")
     visualizer.do("parallelCoordinates",
                   join(wd, "parallel_coord.html"),
                   columnsNames=problem.getPnames()+problem.getObjectivesExpressions())

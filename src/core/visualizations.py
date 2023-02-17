@@ -10,7 +10,13 @@ class Visualizations:
     def scatterPlot(self, **kwargs) -> Figure:
         xName = kwargs.get("xName")
         yName = kwargs.get("yName")
-        visualizationObject = px.scatter(self.data, x=xName, y=yName)
+        if xName in self.data.columns and yName in self.data.columns:
+            if "Efficiency" in self.data.columns:
+                visualizationObject = px.scatter(self.data, x=xName, y=yName, color="Efficiency")
+            else:
+                visualizationObject = px.scatter(self.data, x=xName, y=yName)
+        else:
+            raise ValueError("xName or yName are not present in data.")
         return visualizationObject
 
     def heatMap(self, **kwargs) -> Figure:
