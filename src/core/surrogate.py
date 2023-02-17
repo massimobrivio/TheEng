@@ -122,16 +122,16 @@ if __name__ == "__main__":
     wd = "C:\\Users\\brivio\\Desktop\\"
 
     problem = ProblemConstructor()
-    problem.setObjectives(["-Disp^2"])
-    problem.setContraints(["Disp-2"])
+    problem.setObjectives(["-Disp", "Stress"])
+    problem.setContraints(["Stress-3"])
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
-    problem.setResults(["Disp"])
+    problem.setResults(["Disp", "Stress"])
 
     simul = Simulator(problem)
     simulator = simul.do(
-        "femSimulator", "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
+        "femSimulator", "examples\\beam_freecad_multiobj\\FemCalculixCantilever3D_Param.FCStd"
     )
 
     sampler = Sampler(problem, simulator)
@@ -144,18 +144,18 @@ if __name__ == "__main__":
 
     optimizer = Optimizer(problem, surrogate)
     xOpt, fOpt, dataOptSur = optimizer.do(
-        "geneticAlgorithm", ("n_eval", 200), popSize=10
+        "nsga3", ("n_eval", 200), popSize=10
     )
     xOpt, fOpt, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
 
-    ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(1,))
+    ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(0.4, 0.6))
     dataRanked = ranker.do("topsis")
 
     print("Ranked results are: \n", dataRanked)
 
     visualizer = Visualization(dataRanked)
     visualizer.do(
-        "scatterPlot", join(wd, "scatter.html"), xName="Disp", yName="-Disp^2"
+        "scatterPlot", join(wd, "scatter.html"), xName="Disp", yName="Stress"
     )
     visualizer.do("parallelCoordinates", join(wd, "parallel_coord.html"))
     visualizer.do("heatMap", join(wd, "heatmap.html"))

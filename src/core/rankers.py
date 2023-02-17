@@ -36,7 +36,7 @@ class Rankers:
             ],
             axis=1,
         )
-        sortedResultData = resultData.sort_values("Score", ascending=False)
+        sortedResultData = resultData.sort_values("Score", ascending=True)
         sortedResultData = Rankers._returnEfficient(sortedResultData)
         return sortedResultData
 
@@ -54,7 +54,7 @@ class Rankers:
             ],
             axis=1,
         )
-        sortedResultData = resultData.sort_values("Score", ascending=False)
+        sortedResultData = resultData.sort_values("Score", ascending=True)
         sortedResultData = Rankers._returnEfficient(sortedResultData)
         return sortedResultData
 
