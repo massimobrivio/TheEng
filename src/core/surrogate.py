@@ -110,18 +110,19 @@ class Surrogate(Blues):
 
 
 if __name__ == "__main__":
+    from os.path import join
+
     from optimizer import Optimizer
+    from pandas import concat
+    from ranker import Ranker
     from sampler import Sampler
     from simulator import Simulator
     from visualization import Visualization
-    from ranker import Ranker
-    from pandas import concat
-    from os.path import join
 
     wd = "C:\\Users\\brivio\\Desktop\\"
 
     problem = ProblemConstructor()
-    problem.setObjectives(["Disp^2"])
+    problem.setObjectives(["-Disp^2"])
     problem.setContraints(["Disp-2"])
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
@@ -148,15 +149,13 @@ if __name__ == "__main__":
     xOpt, fOpt, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
 
     ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(1,))
-    dataRanked = ranker.do("simpleAdditive")
+    dataRanked = ranker.do("topsis")
 
     print("Ranked results are: \n", dataRanked)
 
     visualizer = Visualization(dataRanked)
     visualizer.do(
-        "scatterPlot",
-        join(wd, "scatter.html"),
-        xName="Disp",
+        "scatterPlot", join(wd, "scatter.html"), xName="Disp", yName="-Disp^2"
     )
     visualizer.do("parallelCoordinates", join(wd, "parallel_coord.html"))
     visualizer.do("heatMap", join(wd, "heatmap.html"))

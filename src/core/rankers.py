@@ -1,3 +1,4 @@
+from math import sqrt
 from typing import Tuple
 
 from pandas import DataFrame, concat
@@ -14,7 +15,30 @@ class Rankers:
         self.weightedNormData = Rankers._weightening(normData, weights)
 
     def topsis(self):
-        raise NotImplementedError("TOPSIS scoring method not implemented yet.")
+        bestDesign = self.objectivesData.max(axis=0)
+        worstDesign = self.objectivesData.min(axis=0)
+        performanceScore = []
+        for _, design in self.objectivesData.iterrows():
+            positiveSeparation = sqrt(sum((design - bestDesign) ** 2))
+            negativeSeparation = sqrt(sum((design - worstDesign) ** 2))
+            performanceScore.append(
+                negativeSeparation / (negativeSeparation + positiveSeparation)
+            )
+        resultData = concat(
+            [
+                self.data.reset_index(drop=True),
+                DataFrame(
+                    performanceScore,
+                    columns=[
+                        "Score",
+                    ],
+                ),
+            ],
+            axis=1,
+        )
+        sortedResultData = resultData.sort_values("Score", ascending=False)
+        sortedResultData = Rankers._returnEfficient(sortedResultData)
+        return sortedResultData
 
     def simpleAdditive(self):
         performanceScore = self.weightedNormData.sum(axis=1)
