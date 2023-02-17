@@ -10,9 +10,14 @@ class Visualizations:
     def scatterPlot(self, **kwargs) -> Figure:
         xName = kwargs.get("xName")
         yName = kwargs.get("yName")
+        if not (xName and yName):
+            raise ValueError("You must specify xName and yName")
+
         if xName in self.data.columns and yName in self.data.columns:
             if "Efficiency" in self.data.columns:
-                visualizationObject = px.scatter(self.data, x=xName, y=yName, color="Efficiency")
+                visualizationObject = px.scatter(
+                    self.data, x=xName, y=yName, color="Efficiency"
+                )
             else:
                 visualizationObject = px.scatter(self.data, x=xName, y=yName)
         else:

@@ -136,31 +136,27 @@ if __name__ == "__main__":
     sampler = Sampler(problem, simulator)
     xSamp, fSamp, dataSamp = sampler.do("latinHypercube", 10)
 
-    # print("Sampling data: \n", dataSamp)
-
     surrog = Surrogate(problem, dataSamp)
-    surrogate, surrogatePerformance = surrog.do("polynomial", save=True, degree_fit=3, surrogatePath=join(wd, "surrogate.pkl"))
-    # print("Surrogate Performance: \n", surrogatePerformance)
+    surrogate, surrogatePerformance = surrog.do(
+        "polynomial", save=True, degree_fit=3, surrogatePath=join(wd, "surrogate.pkl")
+    )
 
     optimizer = Optimizer(problem, surrogate)
-    xOpt, fOpt, dataOpt = optimizer.do("geneticAlgorithm", ("n_eval", 200), popSize=10)
-
-    print("Optimizer data: \n", dataOpt)
-
+    xOpt, fOpt, dataOptSur = optimizer.do(
+        "geneticAlgorithm", ("n_eval", 200), popSize=10
+    )
     xOpt, fOpt, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
 
-    print("Optimizer data: \n", dataOpt)
-
-    ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(1, ))
+    ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(1,))
     dataRanked = ranker.do("simpleAdditive")
 
+    print("Ranked results are: \n", dataRanked)
+
     visualizer = Visualization(dataRanked)
-    visualizer.do("scatterPlot",
-                  join(wd, "scatter.html"),
-                  xName="Disp",
-                  yName="Disp^2")
-    visualizer.do("parallelCoordinates",
-                  join(wd, "parallel_coord.html"),
-                  columnsNames=problem.getPnames()+problem.getObjectivesExpressions())
-    visualizer.do("heatMap",
-                  join(wd, "heatmap.html"))
+    visualizer.do(
+        "scatterPlot",
+        join(wd, "scatter.html"),
+        xName="Disp",
+    )
+    visualizer.do("parallelCoordinates", join(wd, "parallel_coord.html"))
+    visualizer.do("heatMap", join(wd, "heatmap.html"))

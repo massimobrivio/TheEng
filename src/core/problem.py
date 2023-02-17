@@ -332,7 +332,13 @@ class ProblemConstructor:
 if __name__ == "__main__":
     bounds = {"x": (5, 10), "y": (6, 12), "z": (0, 3)}
     results = {"Disp": 0.5, "B": 2.0, "C": 3}
-    obj_expressions = ["Disp^2", "-Disp * B", "Disp / B", "Disp / B / C", "Disp - B - C"]
+    obj_expressions = [
+        "Disp^2",
+        "-Disp * B",
+        "Disp / B",
+        "Disp / B / C",
+        "Disp - B - C",
+    ]
     constr_expressions = ["Disp - 2", "Disp + B + C", "Disp * B * C"]
 
     problem = ProblemConstructor()
