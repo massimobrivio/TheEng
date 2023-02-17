@@ -69,10 +69,10 @@ class SurrogateView:
             numericInputs.append(st.number_input(input, key=count))
         return numericInputs
 
-    def _getOutputs(self, outputsList: List[str], resultList: List[float]):
+    def _getOutputs(self, outputsList: List[str], resultList: List[List[float]]):
         outputsList = list(filter(None, outputsList))
         textOutputs = []
-        for output in zip(outputsList, resultList):
+        for output in zip(outputsList, resultList[0]):
             textOutputs.append(st.metric(output[0], output[1]))
 
 
