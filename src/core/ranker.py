@@ -13,7 +13,7 @@ class Ranker(Blues):
         self.data = data
         self.weights = weights
 
-    def do(self, rankingName: str):
+    def do(self, rankingName: str = "topsis"):
         rankingMethod = self._getGreen(
             Rankers,
             rankingName,

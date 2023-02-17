@@ -24,7 +24,7 @@ class Surrogate(Blues):
         self.resultsExpressions = resultsExpressions
 
     def do(
-        self, surrogateName: str, save: bool = False, **kwargs
+        self, surrogateName: str = "polynomial", save: bool = False, **kwargs
     ) -> Tuple[Callable[[Dict[str, float]], Dict[str, float]], Tuple[float, float]]:
         surrogateMethod = self._getGreen(Surrogates, surrogateName)(**kwargs)
         trainedSurrogate, surrogatePerformance = self.train(
