@@ -1,4 +1,5 @@
 import sys
+from json import dump
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -68,9 +69,6 @@ class SideBar(QGroupBox):
             "nCPUs": self.nCpusSpinBox.value(),
         }
         return settings
-
-    def onRunClicked(self):
-        print(self.getSideBarSettings())
 
 
 class ParametersDefinition(QGroupBox):
@@ -223,7 +221,6 @@ class ResultsDefinition(QGroupBox):
         results = {}
         for resultNameLine in self.resultNameLines:
             results[resultNameLine.text()] = resultNameLine.text()
-        print(results)
         return results
 
 
@@ -396,6 +393,9 @@ class App(QDialog):
             "Optimization": optimizationSettings
         }
 
+        with open("C:\\Users\\mgbri\\Desktop\\sample.json", "w") as outfile:
+            dump(results, outfile)
+            
         print(results)
 
         return results
