@@ -74,7 +74,7 @@ class SamplingProblem:
 
         Args:
             x (List[List[float]]): Parameters samples.
-            out (Dict[str, List[List[float]]]): Retruned dictionary (inspured by Pymoo).
+            out (Dict[str, List[List[float]]]): Retruned dictionary (inspired by Pymoo).
 
         Returns:
             Dict[str, List[List[float]]]: The evaluated samples, objectives and constraints.
