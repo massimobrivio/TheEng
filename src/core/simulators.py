@@ -78,7 +78,7 @@ class Simulators:
                 results[resultMin] = min(ccx_result)  # type: ignore
                 results[resultAvg] = average(ccx_result)  # type: ignore
             else:
-                raise Exception("Result is neither float not Iterable.")
+                raise Exception("Result is neither float nor Iterable.")
 
         return results
 
