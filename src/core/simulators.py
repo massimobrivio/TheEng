@@ -4,7 +4,9 @@
 from collections import defaultdict
 from json import load
 from sys import path
-from typing import Dict, List
+from typing import Dict, List, Iterable
+
+from numpy import max, min, average
 
 f = open("configs\\settings.json")
 data = load(f)
@@ -65,7 +67,18 @@ class Simulators:
         self.sheet.recompute()
         results = defaultdict(float)
         for result in self.resultsExpressions:
-            results[result] = self.sheet.get(result)
+            ccx_result = self.sheet.get(result)
+            if isinstance(ccx_result, float):
+                results[result] = ccx_result
+            elif isinstance(ccx_result, Iterable):
+                resultMax = result + "Max"
+                resultMin = result + "Min"
+                resultAvg = result + "Avg"
+                results[resultMax] = max(ccx_result)  # type: ignore
+                results[resultMin] = min(ccx_result)  # type: ignore
+                results[resultAvg] = average(ccx_result)  # type: ignore
+            else:
+                raise Exception("Result is neither float not Iterable.")
 
         return results
 
