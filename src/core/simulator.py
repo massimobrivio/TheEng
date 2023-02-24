@@ -12,7 +12,7 @@ class Simulator(Blues):
         self.simulator = None
 
     def do(
-        self, simulatorName: str, fcdPath: str, iterableOutput: str = "Max"
+        self, simulatorName: str, fcdPath: str
     ) -> Callable[[Dict[str, float]], Dict[str, float]]:
         simulator = self._getGreen(
             Simulators,
