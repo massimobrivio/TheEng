@@ -21,6 +21,7 @@ class Simulators:
         self,
         resultsExpressions: List[str],
         fcdPath: str,
+        iterableOutput: str = "Max",
     ) -> None:
         """Initialize an FEM evaluator.
 
@@ -30,6 +31,7 @@ class Simulators:
             fcdPath (str): path to the FreeCAD file containing the model.
         """
         self.resultsExpressions = resultsExpressions
+        self.iterableOutput = iterableOutput
         self.doc = FreeCAD.open(fcdPath)
         self.sheet = self.doc.getObject("Spreadsheet")
 
@@ -71,12 +73,12 @@ class Simulators:
             if isinstance(ccx_result, float):
                 results[result] = ccx_result
             elif isinstance(ccx_result, Iterable):
-                resultMax = result + "Max"
-                resultMin = result + "Min"
-                resultAvg = result + "Avg"
-                results[resultMax] = max(ccx_result)  # type: ignore
-                results[resultMin] = min(ccx_result)  # type: ignore
-                results[resultAvg] = average(ccx_result)  # type: ignore
+                if self.iterableOutput == "Max":
+                    results[result] = max(ccx_result)  # type: ignore
+                elif self.iterableOutput == "Min":
+                    results[result] = min(ccx_result)  # type: ignore
+                elif self.iterableOutput == "Avg":
+                    results[result] = average(ccx_result)  # type: ignore
             else:
                 raise Exception("Result is neither float nor Iterable.")
 

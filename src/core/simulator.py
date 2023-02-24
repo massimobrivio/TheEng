@@ -11,13 +11,14 @@ class Simulator(Blues):
         self.simulator = None
 
     def do(
-        self, simulatorName: str, fcdPath: str
+        self, simulatorName: str, fcdPath: str, iterableOutput: str = "Max"
     ) -> Callable[[Dict[str, float]], Dict[str, float]]:
         simulator = self._getGreen(
             Simulators,
             simulatorName,
             fcdPath=fcdPath,
             resultsExpressions=self.resultsExpressions,
+            iterableOutput=iterableOutput,
         )
         self.simulator = simulator
         return simulator

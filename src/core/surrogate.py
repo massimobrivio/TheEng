@@ -119,11 +119,11 @@ if __name__ == "__main__":
     from simulator import Simulator
     from visualization import Visualization
 
-    wd = "C:\\Users\\brivio\\Desktop\\"
+    wd = "C:\\Users\\mgbri\\Desktop\\"
 
     problem = ProblemConstructor()
     problem.setObjectives(["-Disp", "Stress"])
-    problem.setContraints(["Stress"])
+    problem.setContraints(["Stress - 10"])
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     simul = Simulator(problem)
     simulator = simul.do(
-        "femSimulator", "examples\\beam_freecad_multiobj\\FemCalculixCantilever3D_Param.FCStd"
+        "femSimulator", "examples\\beam_freecad_multiobj\\FemCalculixCantilever3D_Param.FCStd", iterableOutput="Max"
     )
 
     sampler = Sampler(problem, simulator)
