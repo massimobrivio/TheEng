@@ -69,7 +69,10 @@ class Simulators:
         self.sheet.recompute()
         results = defaultdict(float)
         for result, iterableAction in zip(self.resultsExpressions, self.iterableOutput):
-            ccx_result = self.sheet.get(result)
+            if result in parameters:
+                ccx_result = parameters[result]
+            else:
+                ccx_result = self.sheet.get(result)
             if iterableAction is None:
                 if not isinstance(ccx_result, float):
                     raise Exception("Result is not float.")

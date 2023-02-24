@@ -123,11 +123,11 @@ if __name__ == "__main__":
 
     problem = ProblemConstructor()
     problem.setObjectives(["-Disp", "Stress"])
-    problem.setContraints(["Stress - 10"])
+    problem.setContraints(["3000 - Length"])
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
-    problem.setResults({"Disp": None, "Stress": "Max"})
+    problem.setResults({"Disp": None, "Stress": "Max", "Length": None})
 
     simul = Simulator(problem)
     simulator = simul.do(
@@ -151,9 +151,9 @@ if __name__ == "__main__":
     ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(0.4, 0.6))
     dataRanked = ranker.do("topsis")
 
-    print("Ranked results are: \n", dataRanked)
+    print("Ranked results are: \n", dataOpt)
 
-    visualizer = Visualization(dataRanked)
+    visualizer = Visualization(dataOpt)
     visualizer.do(
         "scatterPlot", join(wd, "scatter.html"), xName="Disp", yName="Stress"
     )

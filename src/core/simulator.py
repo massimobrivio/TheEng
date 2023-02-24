@@ -37,7 +37,7 @@ if __name__ == "__main__":
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
-    problem.setResults({"Disp": None})
+    problem.setResults({"Disp": None, "Length": None})
 
     simulator = Simulator(problem)
     simulator.do(
