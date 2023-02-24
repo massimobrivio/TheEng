@@ -8,6 +8,7 @@ from simulators import Simulators
 class Simulator(Blues):
     def __init__(self, problem: ProblemConstructor) -> None:
         self.resultsExpressions = problem.getResultsExpressions()
+        self.iterableOutput = problem.getIterableOutput()
         self.simulator = None
 
     def do(
@@ -16,9 +17,9 @@ class Simulator(Blues):
         simulator = self._getGreen(
             Simulators,
             simulatorName,
-            fcdPath=fcdPath,
             resultsExpressions=self.resultsExpressions,
-            iterableOutput=iterableOutput,
+            iterableOutput=self.iterableOutput,
+            fcdPath=fcdPath,
         )
         self.simulator = simulator
         return simulator

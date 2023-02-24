@@ -1,5 +1,5 @@
 import operator
-from typing import Callable, Dict, Iterable, List, Tuple
+from typing import Callable, Dict, Iterable, List, Tuple, Union
 
 
 class ProblemConstructor:
@@ -16,6 +16,7 @@ class ProblemConstructor:
         self._constraints = []
         self.constraintsExpressions = []
         self.resultsExpressions = []
+        self.iterableOutput = []
 
         self.nobj = 0
         self.nconst = 0
@@ -76,15 +77,17 @@ class ProblemConstructor:
             self.nvar += 1
             self.pnames.append(key)
 
-    def setResults(self, expressions: List[str]) -> None:
+    def setResults(self, expressions: Dict[str, Union[None, str]]) -> None:
         """Set the results to get from the simulation.
 
         Args:
             expressions (List[str]): List of results name as set in the FreeCAD spreadsheet.
         """
-        ProblemConstructor._checkExpressions(expressions)
+        expressionNames = list(expressions.keys())
+        ProblemConstructor._checkExpressions(expressionNames)
 
-        self.resultsExpressions = expressions
+        self.resultsExpressions = expressionNames
+        self.iterableOutput = list(expressions.values())
 
     def getObjectives(self) -> List[Callable[(...), float]]:
         """Returns a list of callables to evaluate the objectives of the problem.
@@ -117,6 +120,14 @@ class ProblemConstructor:
             List[str]: List of names of results.
         """
         return self.resultsExpressions
+    
+    def getIterableOutput(self) -> List[Union[None, str]]:
+        """Specify how to treat iterable results from the simulation.
+
+        Returns:
+            List[str]: List of actions to perform on iterable results.
+        """
+        return self.iterableOutput
 
     def getPnames(self) -> List[str]:
         """Returns the names of the parameters.

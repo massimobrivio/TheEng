@@ -4,7 +4,7 @@
 from collections import defaultdict
 from json import load
 from sys import path
-from typing import Dict, List, Iterable
+from typing import Dict, List, Iterable, Union
 
 from numpy import max, min, average
 
@@ -20,8 +20,8 @@ class Simulators:
     def __init__(
         self,
         resultsExpressions: List[str],
+        iterableOutput: List[Union[str, None]],
         fcdPath: str,
-        iterableOutput: str = "Max",
     ) -> None:
         """Initialize an FEM evaluator.
 
@@ -68,20 +68,27 @@ class Simulators:
 
         self.sheet.recompute()
         results = defaultdict(float)
-        for result in self.resultsExpressions:
+        for result, iterableAction in zip(self.resultsExpressions, self.iterableOutput):
             ccx_result = self.sheet.get(result)
-            if isinstance(ccx_result, float):
+            if iterableAction is None:
+                if not isinstance(ccx_result, float):
+                    raise Exception("Result is not float.")
                 results[result] = ccx_result
-            elif isinstance(ccx_result, Iterable):
-                if self.iterableOutput == "Max":
-                    results[result] = max(ccx_result)  # type: ignore
-                elif self.iterableOutput == "Min":
-                    results[result] = min(ccx_result)  # type: ignore
-                elif self.iterableOutput == "Avg":
-                    results[result] = average(ccx_result)  # type: ignore
+            elif iterableAction == "Max":
+                if not isinstance(ccx_result, Iterable):
+                    raise Exception("Result is not Iterable.")
+                results[result] = max(ccx_result)  # type: ignore
+            elif iterableAction == "Min":
+                if not isinstance(ccx_result, Iterable):
+                    raise Exception("Result is not Iterable.")
+                results[result] = min(ccx_result)  # type: ignore
+            elif iterableAction == "Avg":
+                if not isinstance(ccx_result, Iterable):
+                    raise Exception("Result is not Iterable.")
+                results[result] = average(ccx_result)  # type: ignore
             else:
-                raise Exception("Result is neither float nor Iterable.")
-
+                raise Exception("Invalid iterable action.")
+        
         return results
 
     def cfdSimulator(self, parameters: Dict[str, float]) -> Dict[str, float]:
