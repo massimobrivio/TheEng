@@ -37,12 +37,12 @@ if __name__ == "__main__":
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
-    problem.setResults(["Disp"])
+    problem.setResults({"Disp": None})
 
     simulator = Simulator(problem)
     simulator.do(
-        "femSimulator", "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
+        "femSimulator", "examples\\beam_freecad_multiobj\\FemCalculixCantilever3D_Param.FCStd"
     )
     results = simulator.simulate({"Length": 2000, "Width": 1000, "Height": 1100})
 
-    print(results)
+    print("Displacement it: ", results["Disp"], " mm")
