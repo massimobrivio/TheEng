@@ -19,7 +19,10 @@ class Optimizer(Blues):
         super().__init__(problem, evaluator)
 
     def do(
-        self, optimizerName: str = "nsga3", termination: Tuple[str, int] = ("n_eval", 100), **kwargs
+        self,
+        optimizerName: str = "nsga3",
+        termination: Tuple[str, int] = ("n_eval", 100),
+        **kwargs
     ) -> Tuple[List[List[float]], List[List[float]], DataFrame]:
         if self.nObj > 1:
             if not optimizerName == "nsga3":

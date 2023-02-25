@@ -128,10 +128,11 @@ if __name__ == "__main__":
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
-    
+
     simul = Simulator(problem)
     simulator = simul.do(
-        "femSimulator", "examples\\beam_freecad_multiobj\\FemCalculixCantilever3D_Param.FCStd"
+        "femSimulator",
+        "examples\\beam_freecad_multiobj\\FemCalculixCantilever3D_Param.FCStd",
     )
 
     sampler = Sampler(problem, simulator)
@@ -143,21 +144,24 @@ if __name__ == "__main__":
     )
 
     optimizer = Optimizer(problem, surrogate)
-    xOpt, fOpt, dataOptSur = optimizer.do(
-        "nsga3", ("n_eval", 200), popSize=10
-    )
+    xOpt, fOpt, dataOptSur = optimizer.do("nsga3", ("n_eval", 200), popSize=10)
     xOpt, fOpt, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
-    
+
     print("Optimizer data are: \n", dataOpt)
 
-    ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(0.6, 0.4), constraintsRelaxation=[30, ])
+    ranker = Ranker(
+        problem,
+        concat([dataSamp, dataOpt]),
+        weights=(0.6, 0.4),
+        constraintsRelaxation=[
+            30,
+        ],
+    )
     dataRanked = ranker.do("simpleAdditive")
 
     print("Ranked results are: \n", dataRanked)
 
     visualizer = Visualization(dataRanked)
-    visualizer.do(
-        "scatterPlot", join(wd, "scatter.html"), xName="Disp", yName="Stress"
-    )
+    visualizer.do("scatterPlot", join(wd, "scatter.html"), xName="Disp", yName="Stress")
     visualizer.do("parallelCoordinate", join(wd, "parallel_coord.html"))
     visualizer.do("heatMap", join(wd, "heatmap.html"))

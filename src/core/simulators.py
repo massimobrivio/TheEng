@@ -91,7 +91,7 @@ class Simulators:
                 results[result] = average(ccx_result)  # type: ignore
             else:
                 raise Exception("Invalid iterable action.")
-        
+
         return results
 
     def cfdSimulator(self, parameters: Dict[str, float]) -> Dict[str, float]:

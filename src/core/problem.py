@@ -120,7 +120,7 @@ class ProblemConstructor:
             List[str]: List of names of results.
         """
         return self.resultsExpressions
-    
+
     def getIterableOutput(self) -> List[Union[None, str]]:
         """Specify how to treat iterable results from the simulation.
 

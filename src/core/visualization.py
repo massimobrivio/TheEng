@@ -8,7 +8,12 @@ class Visualization(Blues):
     def __init__(self, data: DataFrame):
         self.data = data
 
-    def do(self, visualizationName: str = "parallelCoordinate", savePath: Union[None, str] = None, **kwargs):
+    def do(
+        self,
+        visualizationName: str = "parallelCoordinate",
+        savePath: Union[None, str] = None,
+        **kwargs
+    ):
         visualizationMethod = self._getGreen(
             Visualizations, visualizationName, data=self.data
         )(**kwargs)

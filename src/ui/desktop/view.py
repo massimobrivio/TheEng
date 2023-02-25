@@ -229,7 +229,7 @@ class ProblemTab(QWidget):
         super().__init__()
         self.parametersDefinition = ParametersDefinition()
         self.resultsDefinition = ResultsDefinition()
-        verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  #type: ignore
+        verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  # type: ignore
 
         mainLayout = QVBoxLayout()
         mainLayout.addWidget(self.parametersDefinition)
@@ -253,7 +253,7 @@ class SamplingTab(QWidget):
         self.nSamplesLabel = QLabel("Number of Samples")
         self.nSamplesSpinBox = QSpinBox()
         self.nSamplesSpinBox.setValue(50)
-        verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  #type: ignore
+        verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  # type: ignore
 
         mainLayout = QVBoxLayout()
         mainLayout.addWidget(self.methodLabel)
@@ -279,7 +279,9 @@ class SurrogateTab(QWidget):
         self.methodLabel = QLabel("Surrogate Method")
         self.methodComboBox = QComboBox()
         self.methodComboBox.addItems(
-            ["polynomial",]
+            [
+                "polynomial",
+            ]
         )
         degreeFitLabel = QLabel("Degree")
         self.degreeFitSpinBox = QSpinBox()
@@ -291,7 +293,7 @@ class SurrogateTab(QWidget):
         self.fitInterceptCheckBox = QCheckBox()
         self.fitInterceptCheckBox.setChecked(True)
 
-        verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  #type: ignore
+        verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  # type: ignore
 
         self.mainLayout = QVBoxLayout()
         self.mainLayout.addWidget(self.methodLabel)
@@ -308,7 +310,6 @@ class SurrogateTab(QWidget):
         self.setLayout(self.mainLayout)
 
     def getSurrogateSettings(self):
-
         results = {
             "Method": self.methodComboBox.currentText(),
             "Degree of Fit": self.degreeFitSpinBox.value(),
@@ -332,7 +333,7 @@ class OptimizationTab(QWidget):
         self.nEvaluationsLabel = QLabel("Number of Evaluations")
         self.nEvaluationsSpinBox = QSpinBox()
         self.nEvaluationsSpinBox.setValue(10)
-        verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  #type: ignore
+        verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  # type: ignore
 
         mainLayout = QVBoxLayout()
         mainLayout.addWidget(self.methodLabel)
@@ -390,12 +391,12 @@ class App(QDialog):
             "Problem": problemSettings,
             "Sampling": samplingSettings,
             "Surrogate": surrogateSettings,
-            "Optimization": optimizationSettings
+            "Optimization": optimizationSettings,
         }
 
         with open("C:\\Users\\mgbri\\Desktop\\sample.json", "w") as outfile:
             dump(results, outfile)
-            
+
         print(results)
 
         return results

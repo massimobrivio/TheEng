@@ -41,7 +41,8 @@ if __name__ == "__main__":
 
     simulator = Simulator(problem)
     simulator.do(
-        "femSimulator", "examples\\beam_freecad_multiobj\\FemCalculixCantilever3D_Param.FCStd"
+        "femSimulator",
+        "examples\\beam_freecad_multiobj\\FemCalculixCantilever3D_Param.FCStd",
     )
     results = simulator.simulate({"Length": 2000, "Width": 1000, "Height": 1100})
 
