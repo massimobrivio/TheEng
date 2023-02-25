@@ -122,13 +122,13 @@ if __name__ == "__main__":
     wd = "C:\\Users\\mgbri\\Desktop\\"
 
     problem = ProblemConstructor()
+    problem.setResults({"Disp": "Max", "Stress": "Max", "Length": None})
     problem.setObjectives(["-Disp", "Stress"])
     problem.setContraints(["3000 - Length"])
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
-    problem.setResults({"Disp": None, "Stress": "Max", "Length": None})
-
+    
     simul = Simulator(problem)
     simulator = simul.do(
         "femSimulator", "examples\\beam_freecad_multiobj\\FemCalculixCantilever3D_Param.FCStd"
@@ -147,9 +147,11 @@ if __name__ == "__main__":
         "nsga3", ("n_eval", 200), popSize=10
     )
     xOpt, fOpt, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
+    
+    print("Optimizer data are: \n", dataOpt)
 
-    ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(0.4, 0.6))
-    dataRanked = ranker.do("topsis")
+    ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(0.6, 0.4), constraintsRelaxation=[30, ])
+    dataRanked = ranker.do("simpleAdditive")
 
     print("Ranked results are: \n", dataRanked)
 
@@ -157,5 +159,5 @@ if __name__ == "__main__":
     visualizer.do(
         "scatterPlot", join(wd, "scatter.html"), xName="Disp", yName="Stress"
     )
-    visualizer.do("parallelCoordinates", join(wd, "parallel_coord.html"))
+    visualizer.do("parallelCoordinate", join(wd, "parallel_coord.html"))
     visualizer.do("heatMap", join(wd, "heatmap.html"))
