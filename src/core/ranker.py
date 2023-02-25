@@ -1,13 +1,13 @@
 from typing import List, Union, Tuple
 
-from abstract import Blues
+from abstract import Step
 import numpy as np
 from pandas import DataFrame
 from problem import ProblemConstructor
 from rankers import Rankers
 
 
-class Ranker(Blues):
+class Ranker(Step):
     def __init__(
         self,
         problem: ProblemConstructor,
@@ -58,7 +58,7 @@ class Ranker(Blues):
         self.weights = weights
 
     def do(self, rankingName: str = "topsis"):
-        rankingMethod = self._getGreen(
+        rankingMethod = self._getMethod(
             Rankers,
             rankingName,
             problem=self.problem,

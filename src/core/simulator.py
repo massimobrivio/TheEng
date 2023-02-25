@@ -1,11 +1,11 @@
 from typing import Callable, Dict
 
-from abstract import Blues
+from abstract import Step
 from problem import ProblemConstructor
 from simulators import Simulators
 
 
-class Simulator(Blues):
+class Simulator(Step):
     def __init__(self, problem: ProblemConstructor) -> None:
         self.resultsExpressions = problem.getResultsExpressions()
         self.iterableOutput = problem.getIterableOutput()
@@ -14,7 +14,7 @@ class Simulator(Blues):
     def do(
         self, simulatorName: str, fcdPath: str
     ) -> Callable[[Dict[str, float]], Dict[str, float]]:
-        simulator = self._getGreen(
+        simulator = self._getMethod(
             Simulators,
             simulatorName,
             resultsExpressions=self.resultsExpressions,

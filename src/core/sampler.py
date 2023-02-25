@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Callable, Dict, List, Tuple
 
-from abstract import Blues
+from abstract import Step
 from numpy import concatenate
 from pandas import DataFrame
 from problem import ProblemConstructor
@@ -9,7 +9,7 @@ from samplers import Samplers
 from scipy.stats import qmc
 
 
-class Sampler(Blues):
+class Sampler(Step):
     def __init__(
         self,
         problem: ProblemConstructor,
@@ -22,7 +22,7 @@ class Sampler(Blues):
     ) -> Tuple[List[List[float]], List[List[float]], DataFrame]:
         problem = SamplingProblem(self.problem, self.evaluator)
 
-        samplerMethod = self._getGreen(Samplers, samplerName, nVar=self.nVar)()
+        samplerMethod = self._getMethod(Samplers, samplerName, nVar=self.nVar)()
         samp = samplerMethod.random(n=nSamples)
         x = qmc.scale(samp, self.lowerBounds, self.upperBounds).tolist()
 

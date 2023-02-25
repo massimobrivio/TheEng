@@ -1,6 +1,6 @@
 from typing import Callable, Dict, List, Tuple, Iterable
 
-from abstract import Blues
+from abstract import Step
 from numpy import concatenate
 from optimizers import Optimizers
 from pandas import DataFrame
@@ -10,7 +10,7 @@ from pymoo.core.problem import ElementwiseProblem
 from pymoo.optimize import minimize
 
 
-class Optimizer(Blues):
+class Optimizer(Step):
     def __init__(
         self,
         problem: ProblemConstructor,
@@ -31,7 +31,7 @@ class Optimizer(Blues):
                 )
 
         problem = OptimizationProblem(self.problem, self.evaluator)
-        algorithm = self._getGreen(Optimizers, optimizerName)(**kwargs, nObj=self.nObj)
+        algorithm = self._getMethod(Optimizers, optimizerName)(**kwargs, nObj=self.nObj)
 
         res = minimize(
             problem,

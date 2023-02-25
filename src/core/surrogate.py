@@ -2,14 +2,14 @@ from os.path import isfile
 from pickle import dump, load
 from typing import Callable, Dict, Tuple
 
-from abstract import Blues
+from abstract import Step
 from pandas import DataFrame
 from problem import ProblemConstructor
 from sklearn.model_selection import cross_val_score
 from surrogates import Surrogates
 
 
-class Surrogate(Blues):
+class Surrogate(Step):
     def __init__(
         self,
         problem: ProblemConstructor,
@@ -26,7 +26,7 @@ class Surrogate(Blues):
     def do(
         self, surrogateName: str = "polynomial", save: bool = False, **kwargs
     ) -> Tuple[Callable[[Dict[str, float]], Dict[str, float]], Tuple[float, float]]:
-        surrogateMethod = self._getGreen(Surrogates, surrogateName)(**kwargs)
+        surrogateMethod = self._getMethod(Surrogates, surrogateName)(**kwargs)
         trainedSurrogate, surrogatePerformance = self.train(
             surrogateMethod, save=save, **kwargs
         )

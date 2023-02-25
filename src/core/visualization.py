@@ -1,10 +1,10 @@
 from typing import Union
-from abstract import Blues
+from abstract import Step
 from visualizations import Visualizations
 from pandas import DataFrame
 
 
-class Visualization(Blues):
+class Visualization(Step):
     def __init__(self, data: DataFrame):
         self.data = data
 
@@ -14,7 +14,7 @@ class Visualization(Blues):
         savePath: Union[None, str] = None,
         **kwargs
     ):
-        visualizationMethod = self._getGreen(
+        visualizationMethod = self._getMethod(
             Visualizations, visualizationName, data=self.data
         )(**kwargs)
         if savePath:

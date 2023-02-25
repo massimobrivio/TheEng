@@ -6,7 +6,7 @@ from typing import Callable, Dict, List, Tuple
 from problem import ProblemConstructor
 
 
-class Blues(ABC):
+class Step(ABC):
     def __init__(
         self,
         problem: ProblemConstructor,
@@ -19,9 +19,9 @@ class Blues(ABC):
         objectiveExpressions = problem.getObjectivesExpressions()
         resultsExpressions = problem.getResultsExpressions()
 
-        Blues._checkExpressions(pNames, "Parameters Names")
-        Blues._checkExpressions(objectiveExpressions, "Objectives Names")
-        Blues._checkExpressions(resultsExpressions, "Results Names")
+        Step._checkExpressions(pNames, "Parameters Names")
+        Step._checkExpressions(objectiveExpressions, "Objectives Names")
+        Step._checkExpressions(resultsExpressions, "Results Names")
 
         self.pNames = pNames
         self.objectives = problem.getObjectives()
@@ -38,11 +38,11 @@ class Blues(ABC):
     def do(self, **kwargs):
         pass
 
-    def _getGreen(self, classObject: Callable, methodName: str, **kwargs):
+    def _getMethod(self, classObject: Callable, methodName: str, **kwargs):
         obj = classObject(**kwargs)
         availableMethods = [m[0] for m in getmembers(obj, predicate=ismethod)]
         if methodName not in availableMethods:
-            similarMethods, similarity_ratio = Blues._findSimilar(
+            similarMethods, similarity_ratio = Step._findSimilar(
                 methodName, availableMethods
             )
             similarMethod = similarMethods[0]
