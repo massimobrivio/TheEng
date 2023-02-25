@@ -151,9 +151,9 @@ if __name__ == "__main__":
     ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(0.4, 0.6))
     dataRanked = ranker.do("topsis")
 
-    print("Ranked results are: \n", dataOpt)
+    print("Ranked results are: \n", dataRanked)
 
-    visualizer = Visualization(dataOpt)
+    visualizer = Visualization(dataRanked)
     visualizer.do(
         "scatterPlot", join(wd, "scatter.html"), xName="Disp", yName="Stress"
     )
