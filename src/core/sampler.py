@@ -20,9 +20,10 @@ class Sampler(Step):
     def do(
         self, samplerName: str = "latinHypercube", nSamples: int = 50
     ) -> Tuple[List[List[float]], List[List[float]], DataFrame]:
+        
         problem = SamplingProblem(self.problem, self.evaluator)
-
         samplerMethod = self._getMethod(Samplers, samplerName, nVar=self.nVar)()
+        
         samp = samplerMethod.random(n=nSamples)
         x = qmc.scale(samp, self.lowerBounds, self.upperBounds).tolist()
 

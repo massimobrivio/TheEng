@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-# Macro Begin: C:\Users\brivio\Desktop\Interface.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
 from collections import defaultdict
 from json import load
 from sys import path
@@ -32,8 +29,8 @@ class Simulators:
         """
         self.resultsExpressions = resultsExpressions
         self.iterableOutput = iterableOutput
-        self.doc = FreeCAD.open(fcdPath)
-        self.sheet = self.doc.getObject("Spreadsheet")
+        self._doc = FreeCAD.open(fcdPath)
+        self._sheet = self._doc.getObject("Spreadsheet")
 
     def femSimulator(self, parameters: Dict[str, float]) -> Dict[str, float]:
         """Evaluate the design parameters and return the results by updating the spreadsheet and running the FEM analysis in FreeCAD.
@@ -46,10 +43,10 @@ class Simulators:
         """
 
         for key, value in parameters.items():
-            self.sheet.set(key, str(value))
+            self._sheet.set(key, str(value))
 
-        self.sheet.recompute()
-        self.doc.recompute()
+        self._sheet.recompute()
+        self._doc.recompute()
 
         fea = ccxtools.FemToolsCcx()
         fea.update_objects()
@@ -66,13 +63,13 @@ class Simulators:
                 "Houston, we have a problem! {}\n".format(message)
             )  # in Python console
 
-        self.sheet.recompute()
+        self._sheet.recompute()
         results = defaultdict(float)
         for result, iterableAction in zip(self.resultsExpressions, self.iterableOutput):
             if result in parameters:
                 ccx_result = parameters[result]
             else:
-                ccx_result = self.sheet.get(result)
+                ccx_result = self._sheet.get(result)
             if iterableAction is None:
                 if not isinstance(ccx_result, float):
                     raise Exception("Result is not float.")

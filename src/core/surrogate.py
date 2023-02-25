@@ -3,6 +3,7 @@ from pickle import dump, load
 from typing import Callable, Dict, Tuple
 
 from abstract import Step
+from numpy import ndarray
 from pandas import DataFrame
 from problem import ProblemConstructor
 from sklearn.model_selection import cross_val_score
@@ -15,24 +16,26 @@ class Surrogate(Step):
         problem: ProblemConstructor,
         data: DataFrame,
     ) -> None:
+        
         parameterNames = problem.getPnames()
         resultsExpressions = problem.getResultsExpressions()
+        
         self.trainingData_x = data[parameterNames].values
         self.trainingData_y = data[resultsExpressions].values
-
         self.trainedSurrogate = None
         self.resultsExpressions = resultsExpressions
 
     def do(
         self, surrogateName: str = "polynomial", save: bool = False, **kwargs
     ) -> Tuple[Callable[[Dict[str, float]], Dict[str, float]], Tuple[float, float]]:
+        
         surrogateMethod = self._getMethod(Surrogates, surrogateName)(**kwargs)
-        trainedSurrogate, surrogatePerformance = self.train(
+        trainedSurrogate, surrogatePerformance = self._train(
             surrogateMethod, save=save, **kwargs
         )
         self.trainedSurrogate = trainedSurrogate
 
-        return self.predict, surrogatePerformance
+        return self._predict, surrogatePerformance
 
     def doFromFile(self, surrogatePath: str) -> Callable[(...), Dict[str, float]]:
         try:  # Try to load surrogate from file
@@ -47,9 +50,9 @@ class Surrogate(Step):
             raise ValueError(
                 "No surrogate has been generated. Run method generate_surrogate first."
             )
-        return self.predict
+        return self._predict
 
-    def predict(self, parameters: Dict[str, float]) -> Dict[str, float]:
+    def _predict(self, parameters: Dict[str, float]) -> Dict[str, float]:
         """Method to evaluate the surrogate model.
 
         Args:
@@ -69,7 +72,7 @@ class Surrogate(Step):
         results = dict(zip(self.resultsExpressions, predictions[0]))
         return results
 
-    def train(
+    def _train(
         self,
         surrogateMethod,
         save: bool = False,
@@ -103,6 +106,9 @@ class Surrogate(Step):
 
         return trainedSurrogate, surrogatePerformance
 
+    def getTrainingData(self) -> Tuple[ndarray, ndarray]:
+        return self.trainingData_x, self.trainingData_y
+    
     @staticmethod
     def _checkPath(path: str, *args) -> None:
         if not isfile(path):
