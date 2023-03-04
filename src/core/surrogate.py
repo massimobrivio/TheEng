@@ -129,7 +129,7 @@ if __name__ == "__main__":
 
     problem = ProblemConstructor()
     problem.setResults({"Disp": "Max", "Stress": "Max", "Length": None})
-    problem.setObjectives(["-Disp", "Stress"])
+    problem.setObjectives(["-Disp", "-Stress"])
     problem.setContraints(["3000 - Length"])
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
