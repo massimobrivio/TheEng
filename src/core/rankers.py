@@ -15,10 +15,10 @@ class Rankers:
         self.weightedNormData = Rankers._weightening(normData, weights)
 
     def topsis(self):
-        bestDesign = self.objectivesData.max(axis=0)
-        worstDesign = self.objectivesData.min(axis=0)
+        bestDesign = self.weightedNormData.min(axis=0)
+        worstDesign = self.weightedNormData.max(axis=0)
         performanceScore = []
-        for _, design in self.objectivesData.iterrows():
+        for _, design in self.weightedNormData.iterrows():
             positiveSeparation = sqrt(sum((design - bestDesign) ** 2))
             negativeSeparation = sqrt(sum((design - worstDesign) ** 2))
             performanceScore.append(
@@ -36,7 +36,7 @@ class Rankers:
             ],
             axis=1,
         )
-        sortedResultData = resultData.sort_values("Score", ascending=True)
+        sortedResultData = resultData.sort_values("Score", ascending=True)  # sure is ascending?
         sortedResultData = Rankers._returnEfficient(sortedResultData)
         return sortedResultData
 
