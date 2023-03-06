@@ -14,7 +14,7 @@ setup(
     author="Massimo Brivio",
     author_email="m.g.brivio@gmail.com",
     description=DESCRIPTION,
-    packages=find_packages(where=".", include=["theeng*"]),
+    packages=find_packages(where=".", include=["core/*"]),
     long_description_content_type="text/markdown",
     long_description="TheEng is a Python library for dealing with structural optimization.",
     install_requires=required,

@@ -2,17 +2,17 @@
 
 TheEng is a Python library for dealing with structural optimization.
 
-It leverages surrogate modelling in order to speed up optimization when function evaluations are too expensive.
+It is designed to be modular and expandable. It leverages surrogate modelling in order to speed up optimization when function evaluations are too expensive but the optimizer does not assume anything on the objective function, therefore it can directly work on the simulation run (wrapped in a callable).
 
-The library is born for a joint usage together with  Finite Element Model (FEM) code but the same workflow
-can easily be applied to any simulation (e.g. CFD).
+The library is born for a joint usage together with Finite Element Model (FEM) and parametric CAD modelling but the same workflow can easily be applied to any simulator (e.g. CFD). So far it interface (somehow) with FreeCAD.
 
 The library automates:
 
-1. The sampling of the simulation in order to create a dataset to train the surrogate.
+1. The sampling of the simulation in order to create a dataset to train the surrogate if needed.
 2. The surrogate training.
-3. The optimization, based on the surrogate model.
+3. The optimization of the design.
 4. The post-processing, using Multi-Criteria Decision Making in order to select the best design.
+5. The result visualization.
 
 ## Installation
 
@@ -24,49 +24,86 @@ pip install -U TheEng
 
 ## Usage
 
-Here is illustrated a simple usage for minimizing objective f1 and f2 of a dummy function emulating a FEM wrapper.
+Here is illustrated a simple usage for minimizing the maximum displacement of a beam while minimizing the maximum stress of it.
 
-The parameters are (*x1*, *x2*).
+The parameters are (*Length*, *Width*, *Height*) of the beam.
 
 ```python
-from theeng.theeng import TheEng
-from theeng.utilities.types import Parameter, Target, FeatureDefinition
-from theeng.interfaces.analytical_interface import AnalyticalInterface
-from theeng.blocks.postprocessing import ScatterPlot
+from os.path import join
 
-def objective(x, *args):
-    out = dict(
-        f1=100 * (x[0] ** 2 + x[1] ** 2),
-        f2=1e6 * (x[0] - 1) ** 2 + x[1] ** 2
-    )
-    return out
+from optimizer import Optimizer
+from pandas import concat
+from ranker import Ranker
+from sampler import Sampler
+from simulator import Simulator
+from visualization import Visualization
 
-if __name__ == "__main__":
 
-    x1 = Parameter("x1", "Millimeter", -2, 2)
-    x2 = Parameter("x2", "Millimeter", -2, 2)
-    f1 = Target("f1", weight=0.7, ineq=5, is_objective=True, is_constraints=True)
-    f2 = Target("f2", weight=0.3, ineq=2000, is_objective=True, is_constraints=True)
+problem = ProblemConstructor()
+problem.setResults(
+    {
+        "Disp": "Max", 
+        "Stress": "Max", 
+        "Length": None
+        }
+)
+problem.setObjectives(["-Disp", "Stress"])
+problem.setContraints(["3000 - Length"])
+problem.setBounds(
+    {
+        "Length": (2000, 5000), 
+        "Width": (1000, 3000), 
+        "Height": (500, 1500)
+        }
+)
 
-    parameters = [x1, x2]
-    targets = [f1, f2]
+simul = Simulator(problem)
+simulator = simul.do(
+    simulatorName="femSimulator",
+    fcdPath="examples\\beam_freecad_multiobj\\FemCalculixCantilever3D_Param.FCStd",
+)
 
-    features = FeatureDefinition(parameters, targets)
-    anal = AnalyticalInterface(objective, features)
+sampler = Sampler(problem, simulator)
+xSamp, fSamp, dataSamp = sampler.do(
+    samplerName="latinHypercube", 
+    nSamples=10
+)
 
-    ai = TheEng(
-        features,
-        anal.objective,
-        path="",
-    )
-    ai.surrogate_strategy = 'polynomial'
-    ai.degree_fit = 2
-    ai.global_iter = 5
+surrog = Surrogate(problem, dataSamp)
+surrogate, surrogatePerformance = surrog.do(
+    surrogateName="polynomial", 
+    save=True, 
+    degree_fit=3, 
+    surrogatePath="surrogate.pkl"
+)
 
-    data = ai.run()
+optimizer = Optimizer(problem, surrogate)
+xOpt, fOpt, dataOptSur = optimizer.do(
+    optimizerName="nsga3", 
+    termination=("n_eval", 200), 
+    popSize=10
 
-    ScatterPlot(data, pareto_x="f1", pareto_y="f2", save=True, figname="pareto.html")
-    print(data)
+)
+xOpt, fOpt, dataOpt = optimizer.convertToSimulator(x=xOpt, simulator=simulator)
+
+ranker = Ranker(
+    problem,
+    data=concat([dataSamp, dataOpt]),
+    weights=(0.6, 0.4),
+    constraintsRelaxation=[30,],
+)
+dataRanked = ranker.do(
+    rankingName="simpleAdditive"
+)
+
+print("Ranked results are: \n", dataRanked)
+
+visualizer = Visualization(dataRanked)
+visualizer.do(
+    visualizationName="parallelCoordinate", 
+    savePath="parallel_coord.html"
+)
+
 ```
 
 Results is an interactive html image as below:
@@ -74,6 +111,9 @@ Results is an interactive html image as below:
 ![pareto](/images/pareto.png)
 
 ## Contributing
+
+The library is in a very initial and exploratory stage. It is a personal way of learning and experimenting.
+
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
