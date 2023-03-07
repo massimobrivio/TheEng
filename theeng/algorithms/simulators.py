@@ -1,12 +1,19 @@
 from collections import defaultdict
 from json import load
+from os.path import exists
 from sys import path
-from typing import Dict, List, Iterable, Union
+from typing import Dict, Iterable, List, Union
 
-from numpy import max, min, average
+from numpy import average, max, min
 
 f = open("configs\\settings.json")
 data = load(f)
+freeCADBinPath = data["FREECAD_PATH"]
+if not exists(freeCADBinPath):
+    raise FileNotFoundError(
+        "provided FreeCAD binary directory does not exists. Check FreeCAD installation path."
+    )
+
 path.append(data["FREECAD_PATH"])
 
 import FreeCAD

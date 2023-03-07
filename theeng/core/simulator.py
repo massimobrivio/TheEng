@@ -1,3 +1,4 @@
+from os.path import isfile
 from typing import Callable, Dict
 
 from theeng.algorithms.simulators import Simulators
@@ -14,6 +15,10 @@ class Simulator(Step):
     def do(
         self, simulatorName: str, fcdPath: str
     ) -> Callable[[Dict[str, float]], Dict[str, float]]:
+        if not isfile(fcdPath):
+            raise FileNotFoundError(
+                "FreeCAD file was not found. Check path or filename."
+            )
         simulator = self._getMethod(
             Simulators,
             simulatorName,
