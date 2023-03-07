@@ -1,6 +1,6 @@
 from typing import Union
 from abstract import Step
-from visualizations import Visualizations
+from algorithms.visualizations import Visualizations
 from pandas import DataFrame
 
 

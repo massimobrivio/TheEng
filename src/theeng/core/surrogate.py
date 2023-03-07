@@ -7,7 +7,7 @@ from numpy import ndarray
 from pandas import DataFrame
 from problem import ProblemConstructor
 from sklearn.model_selection import cross_val_score
-from surrogates import Surrogates
+from algorithms.surrogates import Surrogates
 
 
 class Surrogate(Step):
@@ -16,10 +16,10 @@ class Surrogate(Step):
         problem: ProblemConstructor,
         data: DataFrame,
     ) -> None:
-        
+
         parameterNames = problem.getPnames()
         resultsExpressions = problem.getResultsExpressions()
-        
+
         self.trainingData_x = data[parameterNames].values
         self.trainingData_y = data[resultsExpressions].values
         self.trainedSurrogate = None
@@ -28,7 +28,7 @@ class Surrogate(Step):
     def do(
         self, surrogateName: str = "polynomial", save: bool = False, **kwargs
     ) -> Tuple[Callable[[Dict[str, float]], Dict[str, float]], Tuple[float, float]]:
-        
+
         surrogateMethod = self._getMethod(Surrogates, surrogateName)(**kwargs)
         trainedSurrogate, surrogatePerformance = self._train(
             surrogateMethod, save=save, **kwargs
@@ -108,7 +108,7 @@ class Surrogate(Step):
 
     def getTrainingData(self) -> Tuple[ndarray, ndarray]:
         return self.trainingData_x, self.trainingData_y
-    
+
     @staticmethod
     def _checkPath(path: str, *args) -> None:
         if not isfile(path):

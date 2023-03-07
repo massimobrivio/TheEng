@@ -2,7 +2,7 @@ from typing import Callable, Dict, List, Tuple, Iterable
 
 from abstract import Step
 from numpy import concatenate
-from optimizers import Optimizers
+from algorithms.optimizers import Optimizers
 from pandas import DataFrame
 from problem import ProblemConstructor
 from pymoo.core.callback import Callback

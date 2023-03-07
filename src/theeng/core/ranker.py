@@ -4,7 +4,7 @@ from abstract import Step
 import numpy as np
 from pandas import DataFrame
 from problem import ProblemConstructor
-from rankers import Rankers
+from algorithms.rankers import Rankers
 
 
 class Ranker(Step):

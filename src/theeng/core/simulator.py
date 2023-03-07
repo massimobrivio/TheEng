@@ -2,7 +2,7 @@ from typing import Callable, Dict
 
 from abstract import Step
 from problem import ProblemConstructor
-from simulators import Simulators
+from algorithms.simulators import Simulators
 
 
 class Simulator(Step):
