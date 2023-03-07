@@ -164,24 +164,3 @@ class HistCallback(Callback):
         self.data["x_hist"].append(algorithm.pop.get("X"))
         self.data["r_hist"].append(algorithm.pop.get("R"))
 
-
-if __name__ == "__main__":
-    from simulator import Simulator
-
-    problem = ProblemConstructor()
-    problem.setObjectives(["Disp^2"])
-    problem.setContraints(["Disp-2"])
-    problem.setBounds(
-        {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
-    )
-    problem.setResults({"Disp": "Max"})
-
-    simul = Simulator(problem)
-    simulator = simul.do(
-        "femSimulator", "examples\\beam_freecad\\FemCalculixCantilever3D_Param.FCStd"
-    )
-
-    optimizer = Optimizer(problem, simulator)
-    x, f, data = optimizer.do("geneticAlgorithm", ("n_eval", 6), popSize=3)
-
-    print(data)

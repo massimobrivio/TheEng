@@ -103,25 +103,3 @@ class SamplingProblem:
 
         return out
 
-
-if __name__ == "__main__":
-    from simulator import Simulator
-
-    problem = ProblemConstructor()
-    problem.setObjectives(["Disp^2"])
-    problem.setContraints(["Disp-2"])
-    problem.setBounds(
-        {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
-    )
-    problem.setResults({"Disp": None})
-
-    simul = Simulator(problem)
-    simulator = simul.do(
-        "femSimulator",
-        "examples\\beam_freecad_multiobj\\FemCalculixCantilever3D_Param.FCStd",
-    )
-
-    sampler = Sampler(problem, simulator)
-    samples, f, data = sampler.do("latinHypercube", 5)
-
-    print(data)

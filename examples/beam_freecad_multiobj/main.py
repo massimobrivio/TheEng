@@ -10,6 +10,7 @@ from theeng.core.sampler import Sampler
 from theeng.core.simulator import Simulator
 from theeng.core.surrogate import Surrogate
 from theeng.core.visualization import Visualization
+from theeng.ui.web.querySurrogate import SurrogateView
 
 if __name__ == "__main__":
     wd = join(getcwd(), "examples", "beam_freecad_multiobj")
