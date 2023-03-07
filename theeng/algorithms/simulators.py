@@ -11,7 +11,7 @@ data = load(f)
 freeCADBinPath = data["FREECAD_PATH"]
 if not exists(freeCADBinPath):
     raise FileNotFoundError(
-        "provided FreeCAD binary directory does not exists. Check FreeCAD installation path."
+        "provided FreeCAD binary directory does not exists. Check FreeCAD installation path in settings.json file."
     )
 
 path.append(data["FREECAD_PATH"])

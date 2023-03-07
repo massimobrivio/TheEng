@@ -17,7 +17,7 @@ class Simulator(Step):
     ) -> Callable[[Dict[str, float]], Dict[str, float]]:
         if not isfile(fcdPath):
             raise FileNotFoundError(
-                "FreeCAD file was not found. Check path or filename."
+                f"FreeCAD file at {fcdPath} was not found. Check path or filename."
             )
         simulator = self._getMethod(
             Simulators,
