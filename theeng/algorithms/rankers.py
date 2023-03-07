@@ -37,7 +37,9 @@ class Rankers:
             ],
             axis=1,
         )
-        sortedResultData = resultData.sort_values("Score", ascending=True)  # sure is ascending?
+        sortedResultData = resultData.sort_values(
+            "Score", ascending=True
+        )  # sure is ascending?
         sortedResultData = Rankers._returnEfficient(sortedResultData)
         return sortedResultData
 

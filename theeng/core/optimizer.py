@@ -163,4 +163,3 @@ class HistCallback(Callback):
     def notify(self, algorithm):
         self.data["x_hist"].append(algorithm.pop.get("X"))
         self.data["r_hist"].append(algorithm.pop.get("R"))
-

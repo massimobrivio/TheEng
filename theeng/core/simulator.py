@@ -33,4 +33,3 @@ class Simulator(Step):
         if not self.simulator:
             raise ValueError("No simulator has been generated. Use do() method first.")
         return self.simulator(parameters)
-

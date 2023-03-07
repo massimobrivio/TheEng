@@ -186,9 +186,9 @@ class ProblemConstructor:
 
         Returns:
             Tuple[List[str], List[str]]: A tuple of (operands, operations)
-            
+
         Merit:
-            This function is based on the following merit: 
+            This function is based on the following merit:
             Stack Overflow: https://stackoverflow.com/questions/13055884/parsing-math-expression-in-python-and-solving-to-find-an-answer
             Author: https://stackoverflow.com/users/748858/mgilson
         """
@@ -230,9 +230,9 @@ class ProblemConstructor:
 
         Returns:
             float: Result of the expression.
-            
+
         Merit:
-            This function is based on the following merit: 
+            This function is based on the following merit:
             Stack Overflow: https://stackoverflow.com/questions/13055884/parsing-math-expression-in-python-and-solving-to-find-an-answer
             Author: https://stackoverflow.com/users/748858/mgilson
         """
