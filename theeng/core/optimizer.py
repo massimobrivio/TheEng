@@ -1,13 +1,14 @@
-from typing import Callable, Dict, List, Tuple, Iterable
+from typing import Callable, Dict, Iterable, List, Tuple
 
-from abstract import Step
 from numpy import concatenate
-from algorithms.optimizers import Optimizers
 from pandas import DataFrame
-from problem import ProblemConstructor
 from pymoo.core.callback import Callback
 from pymoo.core.problem import ElementwiseProblem
 from pymoo.optimize import minimize
+
+from theeng.algorithms.optimizers import Optimizers
+from theeng.core.abstract import Step
+from theeng.core.problem import ProblemConstructor
 
 
 class Optimizer(Step):

@@ -1,7 +1,9 @@
 from typing import Union
-from abstract import Step
-from algorithms.visualizations import Visualizations
+
 from pandas import DataFrame
+
+from theeng.algorithms.visualizations import Visualizations
+from theeng.core.abstract import Step
 
 
 class Visualization(Step):

@@ -1,12 +1,13 @@
 from collections import defaultdict
 from typing import Callable, Dict, List, Tuple
 
-from abstract import Step
 from numpy import concatenate
 from pandas import DataFrame
-from problem import ProblemConstructor
-from algorithms.samplers import Samplers
 from scipy.stats import qmc
+
+from theeng.algorithms.samplers import Samplers
+from theeng.core.abstract import Step
+from theeng.core.problem import ProblemConstructor
 
 
 class Sampler(Step):

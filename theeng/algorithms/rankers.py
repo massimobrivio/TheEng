@@ -2,7 +2,8 @@ from math import sqrt
 from typing import Tuple
 
 from pandas import DataFrame, concat
-from problem import ProblemConstructor
+
+from theeng.core.problem import ProblemConstructor
 
 
 class Rankers:

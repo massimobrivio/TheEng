@@ -2,12 +2,13 @@ from os.path import isfile
 from pickle import dump, load
 from typing import Callable, Dict, Tuple
 
-from abstract import Step
 from numpy import ndarray
 from pandas import DataFrame
-from problem import ProblemConstructor
 from sklearn.model_selection import cross_val_score
-from algorithms.surrogates import Surrogates
+
+from theeng.algorithms.surrogates import Surrogates
+from theeng.core.abstract import Step
+from theeng.core.problem import ProblemConstructor
 
 
 class Surrogate(Step):

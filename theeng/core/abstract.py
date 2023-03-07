@@ -3,7 +3,7 @@ from difflib import SequenceMatcher
 from inspect import getmembers, ismethod
 from typing import Callable, Dict, List, Tuple
 
-from problem import ProblemConstructor
+from theeng.core.problem import ProblemConstructor
 
 
 class Step(ABC):

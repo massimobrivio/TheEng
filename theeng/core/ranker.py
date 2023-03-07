@@ -1,10 +1,11 @@
-from typing import List, Union, Tuple
+from typing import List, Tuple, Union
 
-from abstract import Step
 import numpy as np
 from pandas import DataFrame
-from problem import ProblemConstructor
-from algorithms.rankers import Rankers
+
+from theeng.algorithms.rankers import Rankers
+from theeng.core.abstract import Step
+from theeng.core.problem import ProblemConstructor
 
 
 class Ranker(Step):

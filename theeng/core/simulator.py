@@ -1,8 +1,8 @@
 from typing import Callable, Dict
 
-from abstract import Step
-from problem import ProblemConstructor
-from algorithms.simulators import Simulators
+from theeng.algorithms.simulators import Simulators
+from theeng.core.abstract import Step
+from theeng.core.problem import ProblemConstructor
 
 
 class Simulator(Step):
