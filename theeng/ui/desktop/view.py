@@ -319,9 +319,60 @@ class SurrogateTab(QWidget):
         return results
 
 
+class ObjectiveDefinition(QGroupBox):
+    def __init__(self):
+        super().__init__()
+        self.objectiveNameLines = []
+
+        objectiveNameLabel = QLabel("Objective Expression")
+        objectiveNameLine = QLineEdit()
+        objectiveNameLine.setPlaceholderText("Enter Objective expression...")
+
+        self.objectiveNameLines.append(objectiveNameLine)
+
+        self.objectiveSettingsLayout = QVBoxLayout()
+        self.objectiveSettingsLayout.addWidget(objectiveNameLabel)
+        self.objectiveSettingsLayout.addWidget(self.objectiveNameLines[0])
+
+        self.addButton = QPushButton("Add")
+        self.addButton.clicked.connect(self.addRow)
+        self.removeButton = QPushButton("Remove")
+        self.removeButton.clicked.connect(self.removeRow)
+
+        addremoveLayout = QHBoxLayout()
+        addremoveLayout.addWidget(self.addButton)
+        addremoveLayout.addWidget(self.removeButton)
+
+        ## Overall Layout
+
+        mainLayout = QVBoxLayout()
+        mainLayout.addLayout(self.objectiveSettingsLayout)
+        mainLayout.addLayout(addremoveLayout)
+
+        self.setTitle("Objective Settings")
+        self.setLayout(mainLayout)
+
+    def addRow(self):
+        objectiveNameLine = QLineEdit()
+        objectiveNameLine.setPlaceholderText("Enter Objective expression...")
+        self.objectiveNameLines.append(objectiveNameLine)
+        self.objectiveSettingsLayout.addWidget(self.objectiveNameLines[-1])
+
+    def removeRow(self):
+        self.objectiveSettingsLayout.removeWidget(self.objectiveNameLines[-1])
+        self.objectiveNameLines.pop()
+
+    def getObjectiveSettings(self):
+        objectives = {}
+        for objectiveNameLine in self.objectiveNameLines:
+            objectives[objectiveNameLine.text()] = objectiveNameLine.text()
+        return objectives
+
+
 class OptimizationTab(QWidget):
     def __init__(self) -> None:
         super().__init__()
+        self.objectiveDefinition = ObjectiveDefinition()
         self.methodLabel = QLabel("Optimization Algorithm")
         self.methodComboBox = QComboBox()
         self.methodComboBox.addItems(
@@ -336,6 +387,7 @@ class OptimizationTab(QWidget):
         verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  # type: ignore
 
         mainLayout = QVBoxLayout()
+        mainLayout.addWidget(self.objectiveDefinition)
         mainLayout.addWidget(self.methodLabel)
         mainLayout.addWidget(self.methodComboBox)
         mainLayout.addWidget(self.popSizeLabel)
