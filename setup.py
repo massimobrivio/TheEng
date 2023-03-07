@@ -24,4 +24,3 @@ setup(
 # 1 python setup.py sdist bdist
 # 2 twine upload --repository testpypi dist/*
 # 3 twine upload dist/* --> only for final release
-# print(find_packages(where="src"))
