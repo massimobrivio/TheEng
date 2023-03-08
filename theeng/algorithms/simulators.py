@@ -52,7 +52,7 @@ class Simulators:
         for key, value in parameters.items():
             self._sheet.set(key, str(value))
 
-        self._sheet.recompute()
+        # self._sheet.recompute()
         self._doc.recompute()
 
         fea = ccxtools.FemToolsCcx()
