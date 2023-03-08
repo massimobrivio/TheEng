@@ -40,7 +40,7 @@ class Rankers:
         sortedResultData = resultData.sort_values(
             "Score", ascending=True
         )  # sure is ascending?
-        sortedResultData = Rankers._returnEfficient(sortedResultData)
+        sortedResultData = Rankers._returnEfficient(sortedResultData, reverse=True) # topsis score is better when 1
         return sortedResultData
 
     def simpleAdditive(self):
@@ -58,13 +58,13 @@ class Rankers:
             axis=1,
         )
         sortedResultData = resultData.sort_values("Score", ascending=True)
-        sortedResultData = Rankers._returnEfficient(sortedResultData)
+        sortedResultData = Rankers._returnEfficient(sortedResultData, reverse=False) # simple additive score is better when 0
         return sortedResultData
 
     @staticmethod
-    def _returnEfficient(data: DataFrame, efficiencyCliff: float = 0.20):
+    def _returnEfficient(data: DataFrame, efficiencyCliff: float = 0.20, reverse: bool = False):
         if "Score" in data.columns:
-            sortedScores = sorted(data["Score"])
+            sortedScores = sorted(data["Score"], reverse=reverse)
             numElementsToExtract = int(len(data["Score"]) * efficiencyCliff)  # get number of elements corresponding to the smaller 20%
             smallElements = sortedScores[:numElementsToExtract]  # get 20% smaller elements to extract
 
