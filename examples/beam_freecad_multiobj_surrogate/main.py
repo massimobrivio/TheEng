@@ -1,14 +1,18 @@
 from os import getcwd
 from os.path import join
 
+from pandas import concat
+
 from theeng.core.optimizer import Optimizer
 from theeng.core.problem import ProblemConstructor
 from theeng.core.ranker import Ranker
+from theeng.core.sampler import Sampler
 from theeng.core.simulator import Simulator
+from theeng.core.surrogate import Surrogate
 from theeng.core.visualization import Visualization
 
 if __name__ == "__main__":
-    wd = join(getcwd(), "examples", "beam_freecad_multiobj")
+    wd = join(getcwd(), "examples", "beam_freecad_multiobj_surrogate")
 
     problem = ProblemConstructor()
     problem.setResults({"Disp": "Max", "Stress": "Max", "Length": None})
@@ -24,14 +28,27 @@ if __name__ == "__main__":
         fcdPath=join(wd, "FemCalculixCantilever3D_Param.FCStd"),
     )
 
-    optimizer = Optimizer(problem, simulator)
-    xOpt, fOpt, dataOpt = optimizer.do(
-        optimizerName="nsga3", termination=("n_eval", 30), popSize=5
+    sampler = Sampler(problem, simulator)
+    xSamp, fSamp, dataSamp = sampler.do(samplerName="latinHypercube", nSamples=20)
+
+    surrog = Surrogate(problem, dataSamp)
+    surrogate, surrogatePerformance = surrog.do(
+        surrogateName="polynomial",
+        save=True,
+        degree_fit=3,
+        surrogatePath=join(wd, "surrogate.pkl"),
     )
+
+    optimizer = Optimizer(problem, surrogate)
+    xOpt, fOpt, dataOptSur = optimizer.do(
+        optimizerName="nsga3", termination=("n_eval", 200), popSize=10
+    )
+
+    xOpt, fOpt, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
 
     ranker = Ranker(
         problem,
-        dataOpt,
+        concat([dataSamp, dataOpt]),
         weights=(0.5, 0.5),
         constraintsRelaxation=[
             30,

@@ -8,11 +8,11 @@ from theeng.core.simulator import Simulator
 from theeng.core.visualization import Visualization
 
 if __name__ == "__main__":
-    wd = join(getcwd(), "examples", "beam_freecad_multiobj")
+    wd = join(getcwd(), "examples", "beam_freecad_singleobj")
 
     problem = ProblemConstructor()
-    problem.setResults({"Disp": "Max", "Stress": "Max", "Length": None})
-    problem.setObjectives(["-Disp", "Stress"])
+    problem.setResults({"Disp": "Max", "Length": None})
+    problem.setObjectives(["Disp"])
     problem.setContraints(["3000 - Length"])
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
@@ -26,13 +26,13 @@ if __name__ == "__main__":
 
     optimizer = Optimizer(problem, simulator)
     xOpt, fOpt, dataOpt = optimizer.do(
-        optimizerName="nsga3", termination=("n_eval", 30), popSize=5
+        optimizerName="nelderMead", termination=("n_eval", 30)
     )
 
     ranker = Ranker(
         problem,
         dataOpt,
-        weights=(0.5, 0.5),
+        weights=(1, ),
         constraintsRelaxation=[
             30,
         ],
@@ -42,12 +42,6 @@ if __name__ == "__main__":
     print("Ranked results are: \n", dataRanked)
 
     visualizer = Visualization(dataRanked)
-    visualizer.do(
-        visualizationName="scatterPlot",
-        savePath=join(wd, "scatter.html"),
-        xName="Disp",
-        yName="Stress",
-    )
     visualizer.do(
         visualizationName="parallelCoordinate", savePath=join(wd, "parallel_coord.html")
     )
