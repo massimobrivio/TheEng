@@ -62,10 +62,18 @@ class Rankers:
         return sortedResultData
 
     @staticmethod
-    def _returnEfficient(data: DataFrame):
+    def _returnEfficient(data: DataFrame, efficiencyCliff: float = 0.20):
         if "Score" in data.columns:
+            sortedScores = sorted(data["Score"])
+            numElementsToExtract = int(len(data["Score"]) * efficiencyCliff)  # get number of elements corresponding to the smaller 20%
+            smallElements = sortedScores[:numElementsToExtract]  # get 20% smaller elements to extract
+
+            # data["Efficiency"] = [
+            #     True if value < minScore*efficiencyCliff else False for value in data["Score"]
+            # ]
+
             data["Efficiency"] = [
-                True if value < 0.15 else False for value in data["Score"]
+                True if value in smallElements else False for value in data["Score"]
             ]
             return data
         return data
