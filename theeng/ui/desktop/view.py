@@ -1,4 +1,6 @@
 import sys
+from os.path import join
+from os import environ
 from json import dump
 from PyQt5.QtWidgets import (
     QApplication,
@@ -27,6 +29,7 @@ class SideBar(QGroupBox):
         self.workingDirectoryLabel = QLabel("Working Directory")
         self.workingDirectoryLine = QLineEdit()
         self.workingDirectoryLine.setPlaceholderText("Enter working directory...")
+        self.workingDirectoryLine.setText(join(join(environ['USERPROFILE']), 'Desktop') )
 
         self.simulationDirectoryLabel = QLabel("Simulation Directory")
         self.simulationDirectoryLine = QLineEdit()
@@ -69,6 +72,9 @@ class SideBar(QGroupBox):
             "nCPUs": self.nCpusSpinBox.value(),
         }
         return settings
+
+    def getWorkingDirectory(self):
+        return self.workingDirectoryLine.text()
 
 
 class ParametersDefinition(QGroupBox):
@@ -369,10 +375,61 @@ class ObjectiveDefinition(QGroupBox):
         return objectives
 
 
+class ConstraintsDefinition(QGroupBox):
+    def __init__(self):
+        super().__init__()
+        self.constraintNameLines = []
+
+        constraintNameLabel = QLabel("Constraints Expression")
+        constraintNameLine = QLineEdit()
+        constraintNameLine.setPlaceholderText("Enter Constraints expression...")
+
+        self.constraintNameLines.append(constraintNameLine)
+
+        self.constraintSettingsLayout = QVBoxLayout()
+        self.constraintSettingsLayout.addWidget(constraintNameLabel)
+        self.constraintSettingsLayout.addWidget(self.constraintNameLines[0])
+
+        self.addButton = QPushButton("Add")
+        self.addButton.clicked.connect(self.addRow)
+        self.removeButton = QPushButton("Remove")
+        self.removeButton.clicked.connect(self.removeRow)
+
+        addremoveLayout = QHBoxLayout()
+        addremoveLayout.addWidget(self.addButton)
+        addremoveLayout.addWidget(self.removeButton)
+
+        ## Overall Layout
+
+        mainLayout = QVBoxLayout()
+        mainLayout.addLayout(self.constraintSettingsLayout)
+        mainLayout.addLayout(addremoveLayout)
+
+        self.setTitle("Constraints Settings")
+        self.setLayout(mainLayout)
+
+    def addRow(self):
+        constraintNameLine = QLineEdit()
+        constraintNameLine.setPlaceholderText("Enter Constraints expression...")
+        self.constraintNameLines.append(constraintNameLine)
+        self.constraintSettingsLayout.addWidget(self.constraintNameLines[-1])
+
+    def removeRow(self):
+        self.constraintSettingsLayout.removeWidget(self.constraintNameLines[-1])
+        self.constraintNameLines.pop()
+
+    def getConstraintSettings(self):
+        constraints = {}
+        for constraintNameLine in self.constraintNameLines:
+            constraints[constraintNameLine.text()] = constraintNameLine.text()
+        return constraints
+
+
 class OptimizationTab(QWidget):
     def __init__(self) -> None:
         super().__init__()
         self.objectiveDefinition = ObjectiveDefinition()
+        self.constraintDefinition = ConstraintsDefinition()
         self.methodLabel = QLabel("Optimization Algorithm")
         self.methodComboBox = QComboBox()
         self.methodComboBox.addItems(
@@ -386,23 +443,35 @@ class OptimizationTab(QWidget):
         self.nEvaluationsSpinBox.setValue(10)
         verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  # type: ignore
 
+        optimizationSettingsLayout = QGridLayout()
+        optimizationSettingsLayout.addWidget(self.methodLabel, 0, 0)
+        optimizationSettingsLayout.addWidget(self.popSizeLabel, 0, 1)
+        optimizationSettingsLayout.addWidget(self.nEvaluationsLabel, 0, 2)
+        optimizationSettingsLayout.addWidget(self.methodComboBox, 1, 0)
+        optimizationSettingsLayout.addWidget(self.popSizeSpinBox, 1, 1)
+        optimizationSettingsLayout.addWidget(self.nEvaluationsSpinBox, 1, 2)
+
+        box = QGroupBox()
+        box.setTitle("Optimization Settings")
+        box.setLayout(optimizationSettingsLayout)
+
         mainLayout = QVBoxLayout()
+        mainLayout.addWidget(box)
         mainLayout.addWidget(self.objectiveDefinition)
-        mainLayout.addWidget(self.methodLabel)
-        mainLayout.addWidget(self.methodComboBox)
-        mainLayout.addWidget(self.popSizeLabel)
-        mainLayout.addWidget(self.popSizeSpinBox)
-        mainLayout.addWidget(self.nEvaluationsLabel)
-        mainLayout.addWidget(self.nEvaluationsSpinBox)
+        mainLayout.addWidget(self.constraintDefinition)
         mainLayout.addSpacerItem(verticalSpacer)
 
         self.setLayout(mainLayout)
 
     def getOptimizationSettings(self):
+        objectiveParameters = self.objectiveDefinition.getObjectiveSettings()
+        constraintsParameters = self.constraintDefinition.getConstraintSettings()
         results = {
             "Method": self.methodComboBox.currentText(),
             "Population Size": self.popSizeSpinBox.value(),
             "Number of Evaluations": self.nEvaluationsSpinBox.value(),
+            "Objectives Expressions": objectiveParameters,
+            "Constraints Expressions": constraintsParameters
         }
         return results
 
@@ -434,19 +503,21 @@ class App(QDialog):
         self.setWindowTitle("The Eng")
 
     def getSettings(self):
+        sideBarSettings = self.sidebar.getSideBarSettings()
         problemSettings = self.problemTab.getProblemSettings()
         samplingSettings = self.samplingTab.getSamplingSettings()
         surrogateSettings = self.surrogateTab.getSurrogateSettings()
         optimizationSettings = self.optimizationTab.getOptimizationSettings()
 
         results = {
+            "General Settings": sideBarSettings,
             "Problem": problemSettings,
             "Sampling": samplingSettings,
             "Surrogate": surrogateSettings,
             "Optimization": optimizationSettings,
         }
 
-        with open("C:\\Users\\mgbri\\Desktop\\sample.json", "w") as outfile:
+        with open(join(self.sidebar.getWorkingDirectory(),"input.json"), "w") as outfile:
             dump(results, outfile)
 
         print(results)
