@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     optimizer = Optimizer(problem, simulator)
     xOpt, fOpt, dataOpt = optimizer.do(
-        optimizerName="nsga3", termination=("n_eval", 30), popSize=5
+        optimizerName="nsga3", termination=("n_eval", 20), popSize=5
     )
 
     ranker = Ranker(

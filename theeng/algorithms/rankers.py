@@ -68,10 +68,6 @@ class Rankers:
             numElementsToExtract = int(len(data["Score"]) * efficiencyCliff)  # get number of elements corresponding to the smaller 20%
             smallElements = sortedScores[:numElementsToExtract]  # get 20% smaller elements to extract
 
-            # data["Efficiency"] = [
-            #     True if value < minScore*efficiencyCliff else False for value in data["Score"]
-            # ]
-
             data["Efficiency"] = [
                 True if value in smallElements else False for value in data["Score"]
             ]
