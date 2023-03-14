@@ -57,12 +57,7 @@ if __name__ == "__main__":
     problem = ProblemConstructor()
     problem.setResults({"f1": None, "f2": None, "x1": None, "x2": None})
     problem.setObjectives(["f1", "f2"])
-    problem.setContraints(
-        [
-            "11.1111*x1^2 - 11.1111*x1 + 1",
-            "-4.16667*x1^2 + 4.16667*x1 - 1",
-        ]
-    )
+    problem.setContraints(["11.1111*x1^2 - 11.1111*x1 + 1", "-4.16667*x1^2 + 4.16667*x1 - 1",])
     problem.setBounds({"x1": (-2, 2), "x2": (-2, 2)})
 
     optimizer = Optimizer(problem, simulator)
