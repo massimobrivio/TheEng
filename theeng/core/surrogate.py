@@ -25,7 +25,7 @@ class Surrogate(Step):
         self.trainedSurrogate = None
         self.resultsExpressions = resultsExpressions
 
-    def do(
+    def generate(
         self, surrogateName: str = "polynomial", save: bool = False, **kwargs
     ) -> Tuple[Callable[[Dict[str, float]], Dict[str, float]], Tuple[float, float]]:
         surrogateMethod = self._getMethod(Surrogates, surrogateName)(**kwargs)
@@ -36,7 +36,7 @@ class Surrogate(Step):
 
         return self._predict, surrogatePerformance
 
-    def doFromFile(self, surrogatePath: str) -> Callable[(...), Dict[str, float]]:
+    def generateFromFile(self, surrogatePath: str) -> Callable[(...), Dict[str, float]]:
         try:  # Try to load surrogate from file
             Surrogate._checkPath(
                 surrogatePath,

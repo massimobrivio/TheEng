@@ -10,7 +10,7 @@ class Visualization(Step):
     def __init__(self, data: DataFrame):
         self.data = data
 
-    def do(
+    def plot(
         self,
         visualizationName: str = "parallelCoordinate",
         savePath: Union[None, str] = None,

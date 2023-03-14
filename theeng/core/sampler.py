@@ -18,7 +18,7 @@ class Sampler(Step):
     ) -> None:
         super().__init__(problem, evaluator)
 
-    def do(
+    def sample(
         self, samplerName: str = "latinHypercube", nSamples: int = 50
     ) -> Tuple[List[List[float]], List[List[float]], DataFrame]:
         problem = SamplingProblem(self.problem, self.evaluator)

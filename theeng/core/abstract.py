@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from difflib import SequenceMatcher
 from inspect import getmembers, ismethod
 from typing import Callable, Dict, List, Tuple
@@ -6,7 +5,7 @@ from typing import Callable, Dict, List, Tuple
 from theeng.core.problem import ProblemConstructor
 
 
-class Step(ABC):
+class Step:
     def __init__(
         self,
         problem: ProblemConstructor,
@@ -33,10 +32,6 @@ class Step(ABC):
 
         self.nVar = len(self.pNames)
         self.nObj = len(self.objectiveExpressions)
-
-    @abstractmethod
-    def do(self, **kwargs):
-        pass
 
     def _getMethod(self, classObject: Callable, methodName: str, **kwargs):
         obj = classObject(**kwargs)

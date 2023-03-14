@@ -26,16 +26,16 @@ if __name__ == "__main__":
         )
 
         simul = Simulator(problem)
-        simulator = simul.do(
+        simulator = simul.generate(
             simulatorName="femSimulator",
             fcdPath=join(wd, "FemCalculixCantilever3D_Param.FCStd"),
         )
 
         sampler = Sampler(problem, simulator)
-        xSamp, fSamp, dataSamp = sampler.do(samplerName="latinHypercube", nSamples=20)
+        xSamp, fSamp, dataSamp = sampler.sample(samplerName="latinHypercube", nSamples=20)
 
         surrog = Surrogate(problem, dataSamp)
-        surrogate, surrogatePerformance = surrog.do(
+        surrogate, surrogatePerformance = surrog.generate(
             surrogateName="polynomial",
             save=True,
             degree_fit=3,
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         )
 
         optimizer = Optimizer(problem, surrogate)
-        xOpt, fOpt, dataOptSur = optimizer.do(
+        xOpt, fOpt, dataOptSur = optimizer.optimize(
             optimizerName="nsga3", termination=("n_eval", 200), popSize=10
         )
 
@@ -57,21 +57,21 @@ if __name__ == "__main__":
                 30,
             ],
         )
-        dataRanked = ranker.do(rankingName="simpleAdditive")
+        dataRanked = ranker.rank(rankingName="simpleAdditive")
 
         print("Ranked results are: \n", dataRanked)
 
         visualizer = Visualization(dataRanked)
-        visualizer.do(
+        visualizer.plot(
             visualizationName="scatterPlot",
             savePath=join(wd, "scatter.html"),
             xName="Disp",
             yName="Stress",
         )
-        visualizer.do(
+        visualizer.plot(
             visualizationName="parallelCoordinate", savePath=join(wd, "parallel_coord.html")
         )
-        visualizer.do(visualizationName="heatMap", savePath=join(wd, "heatmap.html"))
+        visualizer.plot(visualizationName="heatMap", savePath=join(wd, "heatmap.html"))
 
     stream = open(join(wd, 'output.txt'), 'w')
     results = pstats.Stats(profile, stream=stream)

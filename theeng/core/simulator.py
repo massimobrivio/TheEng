@@ -12,7 +12,7 @@ class Simulator(Step):
         self.iterableOutput = problem.getIterableOutput()
         self.simulator = None
 
-    def do(
+    def generate(
         self, simulatorName: str, fcdPath: str
     ) -> Callable[[Dict[str, float]], Dict[str, float]]:
         if not isfile(fcdPath):

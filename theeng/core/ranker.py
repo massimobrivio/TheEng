@@ -58,7 +58,7 @@ class Ranker(Step):
         self.data = data
         self.weights = weights
 
-    def do(self, rankingName: str = "topsis"):
+    def rank(self, rankingName: str = "topsis"):
         rankingMethod = self._getMethod(
             Rankers,
             rankingName,

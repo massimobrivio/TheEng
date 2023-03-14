@@ -19,7 +19,7 @@ class Optimizer(Step):
     ) -> None:
         super().__init__(problem, evaluator)
 
-    def do(
+    def optimize(
         self,
         optimizerName: str = "nsga3",
         termination: Tuple[str, int] = ("n_eval", 100),
