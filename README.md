@@ -42,11 +42,12 @@ from theeng.core.visualization import Visualization
 def simulator(parameters):
     x1 = parameters["x1"]
     x2 = parameters["x2"]
-    results = {}
-    results["f1"] = 100 * (x1**2 + x2**2)
-    results["f2"] = (x1 - 1) ** 2 + x2**2
-    results["x1"] = x1
-    results["x2"] = x2
+    results = {
+        "f1" : 100 * (x1**2 + x2**2)
+        "f2" : (x1 - 1) ** 2 + x2**2
+        "x1" : x1
+        "x2" : x2
+    }
     return results
 
 
