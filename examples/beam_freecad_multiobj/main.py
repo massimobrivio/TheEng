@@ -19,13 +19,13 @@ if __name__ == "__main__":
     )
 
     simul = Simulator(problem)
-    simulator = simul.do(
+    simulator = simul.generate(
         simulatorName="femSimulator",
         fcdPath=join(wd, "FemCalculixCantilever3D_Param.FCStd"),
     )
 
     optimizer = Optimizer(problem, simulator)
-    xOpt, fOpt, dataOpt = optimizer.do(
+    xOpt, fOpt, dataOpt = optimizer.optimize(
         optimizerName="nsga3", termination=("n_eval", 20), popSize=5
     )
 
@@ -37,18 +37,18 @@ if __name__ == "__main__":
             30,
         ],
     )
-    dataRanked = ranker.do(rankingName="topsis")
+    dataRanked = ranker.rank(rankingName="topsis")
 
     print("Ranked results are: \n", dataRanked)
 
     visualizer = Visualization(dataRanked)
-    visualizer.do(
+    visualizer.plot(
         visualizationName="scatterPlot",
         savePath=join(wd, "scatter.html"),
         xName="Disp",
         yName="Stress",
     )
-    visualizer.do(
+    visualizer.plot(
         visualizationName="parallelCoordinate", savePath=join(wd, "parallel_coord.html")
     )
-    visualizer.do(visualizationName="heatMap", savePath=join(wd, "heatmap.html"))
+    visualizer.plot(visualizationName="heatMap", savePath=join(wd, "heatmap.html"))
