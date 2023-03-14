@@ -24,85 +24,67 @@ pip install -U TheEng
 
 ## Usage
 
-Here is illustrated a simple usage for minimizing the maximum displacement of a beam while minimizing the maximum stress of it.
+Here is illustrated a simple usage replicating the example in Pymoo documentation --> [here](https://pymoo.org/getting_started/part_2.html)
 
-The parameters are (*Length*, *Width*, *Height*) of the beam.
+The parameters are (*x1*, *x2*).\
+The objectives are (*f1*, *f2*).
 
 ```python
 from os import getcwd
 from os.path import join
 
-from pandas import concat
-
 from theeng.core.optimizer import Optimizer
 from theeng.core.problem import ProblemConstructor
 from theeng.core.ranker import Ranker
-from theeng.core.sampler import Sampler
-from theeng.core.simulator import Simulator
-from theeng.core.surrogate import Surrogate
 from theeng.core.visualization import Visualization
 
+
+def simulator(parameters):
+    x1 = parameters["x1"]
+    x2 = parameters["x2"]
+    results = {}
+    results["f1"] = 100 * (x1**2 + x2**2)
+    results["f2"] = (x1 - 1) ** 2 + x2**2
+    results["x1"] = x1
+    results["x2"] = x2
+    return results
+
+
 if __name__ == "__main__":
-    wd = join(getcwd(), "examples", "beam_freecad_multiobj")
+    wd = join(getcwd(), "examples", "pymoo_analytical_multiobj")
 
     problem = ProblemConstructor()
-    problem.setResults({"Disp": "Max", "Stress": "Max", "Length": None})
-    problem.setObjectives(["Disp", "-Stress"])
-    problem.setContraints(["3000 - Length"])
-    problem.setBounds(
-        {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
+    problem.setResults({"f1": None, "f2": None, "x1": None, "x2": None})
+    problem.setObjectives(["f1", "f2"])
+    problem.setContraints(
+        [
+            "11.1111*x1^2 - 11.1111*x1 + 1",
+            "-4.16667*x1^2 + 4.16667*x1 - 1",
+        ]
+    )
+    problem.setBounds({"x1": (-2, 2), "x2": (-2, 2)})
+
+    optimizer = Optimizer(problem, simulator)
+    xOpt, fOpt, dataOpt = optimizer.optimize(
+        optimizerName="nsga3", termination=("n_eval", 1600), popSize=40
     )
 
-    simul = Simulator(problem)
-    simulator = simul.do(
-        simulatorName="femSimulator",
-        fcdPath=join(wd, "FemCalculixCantilever3D_Param.FCStd")
+    ranker = Ranker(
+        problem,
+        dataOpt,
+        weights=(0.5, 0.5),
+        constraintsRelaxation=[20, 20],
     )
-
-    sampler = Sampler(problem, simulator)
-    xSamp, fSamp, dataSamp = sampler.do(
-        samplerName = "latinHypercube",
-        nSamples = 20
-    )
-
-    surrog = Surrogate(problem, dataSamp)
-    surrogate, surrogatePerformance = surrog.do(
-        surrogateName="polynomial",
-        save=True,
-        degree_fit=3,
-        surrogatePath=join(wd, "surrogate.pkl")
-    )
-
-    optimizer = Optimizer(problem, surrogate)
-    xOpt, fOpt, dataOptSur = optimizer.do(
-        optimizerName="nsga3",
-        termination=("n_eval", 200),
-        popSize=10
-    )
-
-    xOpt, fOpt, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
-
-    ranker = Ranker(problem, concat([dataSamp, dataOpt]), weights=(0.6, 0.4), constraintsRelaxation=[30,])
-    dataRanked = ranker.do(
-        rankingName="simpleAdditive"
-    )
+    dataRanked = ranker.rank(rankingName="simpleAdditive")
 
     print("Ranked results are: \n", dataRanked)
 
     visualizer = Visualization(dataRanked)
-    visualizer.do(
+    visualizer.plot(
         visualizationName="scatterPlot",
         savePath=join(wd, "scatter.html"),
-        xName="Disp",
-        yName="Stress"
-    )
-    visualizer.do(
-        visualizationName="parallelCoordinate",
-        savePath=join(wd, "parallel_coord.html")
-    )
-    visualizer.do(
-        visualizationName="heatMap",
-        savePath=join(wd, "heatmap.html")
+        xName="f1",
+        yName="f2",
     )
 
 ```
