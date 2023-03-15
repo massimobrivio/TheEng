@@ -12,9 +12,9 @@ from theeng.algorithms.optimizers import Optimizers
 from theeng.core.abstract import Step
 from theeng.core.problem import ProblemConstructor
 
-# n_threads = cpu_count() - 1
-# pool = ThreadPool(n_threads)
-# runner = StarmapParallelization(pool.starmap)
+n_threads = cpu_count() - 1
+pool = ThreadPool(n_threads)
+runner = StarmapParallelization(pool.starmap)
 
 
 class Optimizer(Step):
@@ -38,7 +38,7 @@ class Optimizer(Step):
                 )
 
         problem = OptimizationProblem(
-            self.problem, self.evaluator, # elementwise_runner=runner, elementwise_evaluation=True
+            self.problem, self.evaluator, elementwise_runner=runner, elementwise_evaluation=True
         )
         algorithm = self._getMethod(Optimizers, optimizerName)(**kwargs, nObj=self.nObj)
 
