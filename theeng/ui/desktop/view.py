@@ -184,17 +184,26 @@ class ResultsDefinition(QGroupBox):
     def __init__(self):
         super().__init__()
         self.resultNameLines = []
+        self.resultOperationComboBoxes = []
 
         resultNameLabel = QLabel("Result Name")
         resultNameLine = QLineEdit()
         resultNameLine.setPlaceholderText("Enter Result name...")
+        
+        resultOperationLabel = QLabel("Operation")
+        resultOperationComboBox = QComboBox()
+        resultOperationComboBox.addItems(["None", "Max", "Min", "Avg"])
 
         self.resultNameLines.append(resultNameLine)
+        self.resultOperationComboBoxes.append(resultOperationComboBox)
 
-        self.resultSettingsLayout = QVBoxLayout()
-        self.resultSettingsLayout.addWidget(resultNameLabel)
-        self.resultSettingsLayout.addWidget(self.resultNameLines[0])
+        self.resultSettingsLayout = QGridLayout()
+        self.resultSettingsLayout.addWidget(resultNameLabel, 0, 0)
+        self.resultSettingsLayout.addWidget(resultOperationLabel, 0, 1)
+        self.resultSettingsLayout.addWidget(self.resultNameLines[0], 1, 0)
+        self.resultSettingsLayout.addWidget(self.resultOperationComboBoxes[0], 1, 1)
 
+        self.addClicked = 1
         self.addButton = QPushButton("Add")
         self.addButton.clicked.connect(self.addRow)
         self.removeButton = QPushButton("Remove")
@@ -216,17 +225,27 @@ class ResultsDefinition(QGroupBox):
     def addRow(self):
         resultNameLine = QLineEdit()
         resultNameLine.setPlaceholderText("Enter Result name...")
+        resultOperationComboBox = QComboBox()
+        resultOperationComboBox.addItems(["None", "Max", "Min", "Avg"])
+        
         self.resultNameLines.append(resultNameLine)
-        self.resultSettingsLayout.addWidget(self.resultNameLines[-1])
+        self.resultOperationComboBoxes.append(resultOperationComboBox)
+        
+        self.resultSettingsLayout.addWidget(self.resultNameLines[-1], self.addClicked + 1, 0)
+        self.resultSettingsLayout.addWidget(self.resultOperationComboBoxes[-1], self.addClicked + 1, 1)
+        self.addClicked += 1
 
     def removeRow(self):
         self.resultSettingsLayout.removeWidget(self.resultNameLines[-1])
+        self.resultSettingsLayout.removeWidget(self.resultOperationComboBoxes[-1])
         self.resultNameLines.pop()
+        self.resultOperationComboBoxes.pop()
+        self.addClicked -= 1
 
     def getResultsSettings(self):
         results = {}
-        for resultNameLine in self.resultNameLines:
-            results[resultNameLine.text()] = resultNameLine.text()
+        for resultNameLine, resultOperationComboBox in zip(self.resultNameLines, self.resultOperationComboBoxes):
+            results[resultNameLine.text()] = resultOperationComboBox.currentText()
         return results
 
 
@@ -329,17 +348,31 @@ class ObjectiveDefinition(QGroupBox):
     def __init__(self):
         super().__init__()
         self.objectiveNameLines = []
+        self.objectiveWeightsSpinBoxes = []
+
+        ## Parameter Settings Layout
 
         objectiveNameLabel = QLabel("Objective Expression")
+        objectiveWeightLabel = QLabel("Objective Weight")
+
         objectiveNameLine = QLineEdit()
-        objectiveNameLine.setPlaceholderText("Enter Objective expression...")
+        objectiveNameLine.setPlaceholderText("Enter Objective Expression...")
+        objectiveWeightSpinBox = QDoubleSpinBox()
+        objectiveWeightSpinBox.setValue(0.0)
 
         self.objectiveNameLines.append(objectiveNameLine)
+        self.objectiveWeightsSpinBoxes.append(objectiveWeightSpinBox)
 
-        self.objectiveSettingsLayout = QVBoxLayout()
-        self.objectiveSettingsLayout.addWidget(objectiveNameLabel)
-        self.objectiveSettingsLayout.addWidget(self.objectiveNameLines[0])
+        self.objectiveSettingsLayout = QGridLayout()
+        self.objectiveSettingsLayout.addWidget(objectiveNameLabel, 0, 0)
+        self.objectiveSettingsLayout.addWidget(objectiveWeightLabel, 0, 1)
 
+        self.objectiveSettingsLayout.addWidget(self.objectiveNameLines[0], 1, 0)
+        self.objectiveSettingsLayout.addWidget(self.objectiveWeightsSpinBoxes[0], 1, 1)
+
+        ## Add Remove Layout
+
+        self.addClicked = 1
         self.addButton = QPushButton("Add")
         self.addButton.clicked.connect(self.addRow)
         self.removeButton = QPushButton("Remove")
@@ -360,36 +393,67 @@ class ObjectiveDefinition(QGroupBox):
 
     def addRow(self):
         objectiveNameLine = QLineEdit()
-        objectiveNameLine.setPlaceholderText("Enter Objective expression...")
+        objectiveNameLine.setPlaceholderText("Enter Objective Expression...")
+        objectiveWeightSpinBox = QDoubleSpinBox()
+        objectiveWeightSpinBox.setValue(0.0)
+
         self.objectiveNameLines.append(objectiveNameLine)
-        self.objectiveSettingsLayout.addWidget(self.objectiveNameLines[-1])
+        self.objectiveWeightsSpinBoxes.append(objectiveWeightSpinBox)
+
+        self.objectiveSettingsLayout.addWidget(
+            self.objectiveNameLines[-1], self.addClicked + 1, 0
+        )
+        self.objectiveSettingsLayout.addWidget(
+            self.objectiveWeightsSpinBoxes[-1], self.addClicked + 1, 1
+        )
+
+        self.addClicked += 1
 
     def removeRow(self):
         self.objectiveSettingsLayout.removeWidget(self.objectiveNameLines[-1])
+        self.objectiveSettingsLayout.removeWidget(self.objectiveWeightsSpinBoxes[-1])
+
         self.objectiveNameLines.pop()
+        self.objectiveWeightsSpinBoxes.pop()
+
+        self.addClicked -= 1
 
     def getObjectiveSettings(self):
-        objectives = {}
-        for objectiveNameLine in self.objectiveNameLines:
-            objectives[objectiveNameLine.text()] = objectiveNameLine.text()
-        return objectives
+        results = {}
+        for objectiveNameLine, objectiveWeightSpinBox in zip(
+            self.objectiveNameLines,
+            self.objectiveWeightsSpinBoxes,
+        ):
+            results[objectiveNameLine.text()] = objectiveWeightSpinBox.value()
+            
+        return results
 
 
 class ConstraintsDefinition(QGroupBox):
     def __init__(self):
         super().__init__()
         self.constraintNameLines = []
+        self.constraintRelaxationSpinBoxes = []
 
         constraintNameLabel = QLabel("Constraints Expression")
+        constraintRelaxationLabel = QLabel("Constraints Relaxation")
+        
         constraintNameLine = QLineEdit()
         constraintNameLine.setPlaceholderText("Enter Constraints expression...")
+        constraintRelaxationSpinBox = QDoubleSpinBox()
+        constraintRelaxationSpinBox.setValue(0.0)
 
         self.constraintNameLines.append(constraintNameLine)
+        self.constraintRelaxationSpinBoxes.append(constraintRelaxationSpinBox)
 
-        self.constraintSettingsLayout = QVBoxLayout()
-        self.constraintSettingsLayout.addWidget(constraintNameLabel)
-        self.constraintSettingsLayout.addWidget(self.constraintNameLines[0])
+        self.constraintSettingsLayout = QGridLayout()
+        self.constraintSettingsLayout.addWidget(constraintNameLabel, 0, 0)
+        self.constraintSettingsLayout.addWidget(constraintRelaxationLabel, 0, 1)
+        
+        self.constraintSettingsLayout.addWidget(self.constraintNameLines[0], 1, 0)
+        self.constraintSettingsLayout.addWidget(self.constraintRelaxationSpinBoxes[0], 1, 1)
 
+        self.addClicked = 1
         self.addButton = QPushButton("Add")
         self.addButton.clicked.connect(self.addRow)
         self.removeButton = QPushButton("Remove")
@@ -411,17 +475,28 @@ class ConstraintsDefinition(QGroupBox):
     def addRow(self):
         constraintNameLine = QLineEdit()
         constraintNameLine.setPlaceholderText("Enter Constraints expression...")
+        constraintRelaxationSpinBox = QDoubleSpinBox()
+        constraintRelaxationSpinBox.setValue(0.0)
+        
         self.constraintNameLines.append(constraintNameLine)
+        self.constraintRelaxationSpinBoxes.append(constraintRelaxationSpinBox)
         self.constraintSettingsLayout.addWidget(self.constraintNameLines[-1])
+        self.constraintSettingsLayout.addWidget(self.constraintRelaxationSpinBoxes[-1])
+        
+        self.addClicked += 1
 
     def removeRow(self):
         self.constraintSettingsLayout.removeWidget(self.constraintNameLines[-1])
+        self.constraintSettingsLayout.removeWidget(self.constraintRelaxationSpinBoxes[-1])
         self.constraintNameLines.pop()
+        self.constraintRelaxationSpinBoxes.pop()
+        
+        self.addClicked -= 1
 
     def getConstraintSettings(self):
         constraints = {}
-        for constraintNameLine in self.constraintNameLines:
-            constraints[constraintNameLine.text()] = constraintNameLine.text()
+        for constraintNameLine, constraintRelaxationSpinBox in zip(self.constraintNameLines, self.constraintRelaxationSpinBoxes):
+            constraints[constraintNameLine.text()] = constraintRelaxationSpinBox.value()
         return constraints
 
 
