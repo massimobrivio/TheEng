@@ -27,12 +27,12 @@ if __name__ == "__main__":
 
     problem = ProblemConstructor()
     problem.setResults({"f1": None, "f2": None, "x1": None, "x2": None})
-    problem.setObjectives(["f1", "f2"])
+    problem.setObjectives({"f1": 0.5, "f2": 0.5})
     problem.setContraints(
-        [
-            "11.1111*x1^2 - 11.1111*x1 + 1",  # expanded from 2*(x[0]-0.1) * (x[0]-0.9) / 0.18
-            "-4.16667*x1^2 + 4.16667*x1 - 1",  # expanded from - 20*(x[0]-0.4) * (x[0]-0.6) / 4.8
-        ],
+        {
+            "11.1111*x1^2 - 11.1111*x1 + 1": 20,  # expanded from 2*(x[0]-0.1) * (x[0]-0.9) / 0.18
+            "-4.16667*x1^2 + 4.16667*x1 - 1": 20,  # expanded from - 20*(x[0]-0.4) * (x[0]-0.6) / 4.8
+        },
     )
     problem.setBounds({"x1": (-2, 2), "x2": (-2, 2)})
 
@@ -54,12 +54,7 @@ if __name__ == "__main__":
 
     _, _, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
 
-    ranker = Ranker(
-        problem,
-        concat([dataSamp, dataOpt]),
-        weights=(0.5, 0.5),
-        constraintsRelaxation=[20, 20],
-    )
+    ranker = Ranker(problem, concat([dataSamp, dataOpt]))
     dataRanked = ranker.rank(rankingName="simpleAdditive")
 
     dataRanked.to_csv(join(wd, "db.csv"))

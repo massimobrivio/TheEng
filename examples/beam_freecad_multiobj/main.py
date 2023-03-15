@@ -14,8 +14,8 @@ if __name__ == "__main__":
 
     problem = ProblemConstructor()
     problem.setResults({"Disp": "Max", "Stress": "Max", "Length": None})
-    problem.setObjectives(["Disp", "Stress"])
-    problem.setContraints(["3000 - Length"])
+    problem.setObjectives({"Disp": 0.5, "Stress": 0.5})
+    problem.setContraints({"3000 - Length": 30})
     problem.setBounds(
         {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
     )
@@ -32,14 +32,7 @@ if __name__ == "__main__":
     )
     end_time = time.time()
 
-    ranker = Ranker(
-        problem,
-        dataOpt,
-        weights=(0.5, 0.5),
-        constraintsRelaxation=[
-            30,
-        ],
-    )
+    ranker = Ranker(problem, dataOpt)
     dataRanked = ranker.rank(rankingName="topsis")
 
     print("Ranked results are: \n", dataRanked)

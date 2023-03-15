@@ -17,22 +17,24 @@ class ProblemConstructor:
         self.constraintsExpressions = []
         self.resultsExpressions = []
         self.iterableOutput = []
+        self.objectiveWeights = []
+        self.constraintsRelaxation = []
 
         self.nobj = 0
         self.nconst = 0
         self.nvar = 0
         self.pnames = []
 
-    def setObjectives(self, expressions: List[str]) -> None:
+    def setObjectives(self, expressions: Dict[str, float]) -> None:
         """Set the objectives of the problem.
 
         Args:
-            expressions (List[str]): List of expressions encoded as strings.
+            expressions (Dict[str, float]): Dict of expressions encoded as strings with their weights.
         """
 
         ProblemConstructor._checkExpressions(expressions)
 
-        for expression in expressions:
+        for expression in expressions.keys():
             operands, operations = ProblemConstructor._expressionParser(expression)
             self._objectives.append(
                 lambda results, operands=operands, operations=operations: ProblemConstructor._expressionEvaluator(
@@ -40,18 +42,19 @@ class ProblemConstructor:
                 )
             )
             self.nobj += 1
-        self.objectivesExpressions = expressions
+        self.objectivesExpressions = list(expressions.keys())
+        self.objectiveWeights = list(expressions.values())
 
-    def setContraints(self, expressions: List[str]) -> None:
+    def setContraints(self, expressions: Dict[str, float]) -> None:
         """Set the constraints of the problem.
 
         Args:
-            expressions (List[str]): List of expressions encoded as strings. They will be considered <= 0.
+            expressions (Dict[str, float]): Dictionary of expressions encoded as strings with the allowable relaxation. They will be considered <= 0.
         """
 
         ProblemConstructor._checkExpressions(expressions)
 
-        for expression in expressions:
+        for expression in expressions.keys():
             operands, operations = ProblemConstructor._expressionParser(expression)
             self._constraints.append(
                 lambda results, operands=operands, operations=operations: ProblemConstructor._expressionEvaluator(
@@ -59,7 +62,8 @@ class ProblemConstructor:
                 )
             )
             self.nconst += 1
-        self.constraintsExpressions = expressions
+        self.constraintsExpressions = list(expressions.keys())
+        self.constraintsRelaxation = list(expressions.values())
 
     def setBounds(self, bounds: Dict[str, Tuple[float, float]]) -> None:
         """Set the bounds of the problem.
@@ -83,10 +87,9 @@ class ProblemConstructor:
         Args:
             expressions (List[str]): List of results name as set in the FreeCAD spreadsheet.
         """
-        expressionNames = list(expressions.keys())
-        ProblemConstructor._checkExpressions(expressionNames)
+        ProblemConstructor._checkExpressions(expressions)  # type: ignore
 
-        self.resultsExpressions = expressionNames
+        self.resultsExpressions = list(expressions.keys())
         self.iterableOutput = list(expressions.values())
 
     def getObjectives(self) -> List[Callable[(...), float]]:
@@ -128,6 +131,22 @@ class ProblemConstructor:
             List[str]: List of actions to perform on iterable results.
         """
         return self.iterableOutput
+    
+    def getObjectiveWeights(self) -> List[float]:
+        """Returns the weights of the objectives.
+
+        Returns:
+            List[float]: List of weights of objectives.
+        """
+        return self.objectiveWeights
+    
+    def getConstraintsRelaxation(self) -> List[float]:
+        """Returns the relaxation of the constraints.
+
+        Returns:
+            List[float]: List of relaxation of constraints.
+        """
+        return self.constraintsRelaxation
 
     def getPnames(self) -> List[str]:
         """Returns the names of the parameters.
@@ -281,11 +300,11 @@ class ProblemConstructor:
         return operands_values[0]
 
     @staticmethod
-    def _checkExpressions(expressions: List[str]) -> bool:
+    def _checkExpressions(expressions: Dict[str, float]) -> bool:
         """_summary_
 
         Args:
-            expression (List[str]): Expressions to be checked.
+            expression (Dict[str, float]): Expressions to be checked.
 
         Raises:
             TypeError: If any expressions are not encoded as strings.
@@ -348,35 +367,3 @@ class ProblemConstructor:
             return True
         except ValueError:
             return False
-
-
-if __name__ == "__main__":
-    bounds = {"x": (5, 10), "y": (6, 12), "z": (0, 3)}
-    results = {"Disp": 0.5, "B": 2.0, "C": 3}
-    obj_expressions = [
-        "Disp^2",
-        "-Disp * B",
-        "Disp / B",
-        "Disp / B / C",
-        "Disp - B - C",
-    ]
-    constr_expressions = ["Disp - 2", "Disp + B + C", "Disp * B * C"]
-
-    problem = ProblemConstructor()
-    problem.setObjectives(obj_expressions)
-    problem.setContraints(constr_expressions)
-    problem.setBounds(bounds)
-
-    for i, obj in enumerate(problem.getObjectives()):
-        print(f"Objective Value nr. {i}: {obj(results)}")
-        print(f"Objective Expression nr. {i}: {problem.objectivesExpressions[i]}")
-    print("\n\n")
-    for i, constr in enumerate(problem.getConstraints()):
-        print(f"Constraint nr. {i}: {constr(results)}")
-        print(f"Constraint Expression nr. {i}: {problem.constraintsExpressions[i]}")
-    print("\n\n")
-    i = 0
-    for lb, ub in zip(*problem.getBounds()):
-        print(f"Bound nr. {i}: {lb} - {ub}")
-        print(f"Bound Expression nr. {i}: {problem.boundsExpressions[i]}")
-        i += 1

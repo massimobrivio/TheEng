@@ -1,5 +1,3 @@
-from typing import List, Tuple, Union
-
 import numpy as np
 from pandas import DataFrame
 
@@ -9,27 +7,22 @@ from theeng.core.problem import ProblemConstructor
 
 
 class Ranker(Step):
-    def __init__(
-        self,
-        problem: ProblemConstructor,
-        data: DataFrame,
-        weights: Tuple[float, ...],
-        constraintsRelaxation: Union[List[float], None] = None,
-    ) -> None:
+    def __init__(self, problem: ProblemConstructor, data: DataFrame) -> None:
         objectiveExpressions = problem.getObjectivesExpressions()
         constraintsExpressions = problem.getConstraintsExpressions()
+        objectiveWeights = problem.getObjectiveWeights()
+        constraintsRelaxation = problem.getConstraintsRelaxation()
 
-        if not len(weights) == len(objectiveExpressions):
+        if not len(objectiveWeights) == len(objectiveExpressions):
             raise ValueError("Weights should be the same length as objectives.")
 
-        if not sum(weights) == 1:
+        if not sum(objectiveWeights) == 1:
             raise ValueError("Weights should sum up to 1.")
 
-        if constraintsRelaxation is not None:
-            if not len(constraintsRelaxation) == len(constraintsExpressions):
-                raise ValueError(
-                    "Constraints relaxation should be the same length as constraints expressions."
-                )
+        if not len(constraintsRelaxation) == len(constraintsExpressions):
+            raise ValueError(
+                "Constraints relaxation should be the same length as constraints expressions."
+            )
 
         elif constraintsRelaxation is None:
             constraintsRelaxation = [np.inf] * len(constraintsExpressions)
@@ -56,7 +49,7 @@ class Ranker(Step):
 
         self.problem = problem
         self.data = data
-        self.weights = weights
+        self.objectiveWeights = objectiveWeights
 
     def rank(self, rankingName: str = "topsis"):
         rankingMethod = self._getMethod(
@@ -64,7 +57,7 @@ class Ranker(Step):
             rankingName,
             problem=self.problem,
             data=self.data,
-            weights=self.weights,
+            weights=self.objectiveWeights,
         )
         data = rankingMethod()
         return data

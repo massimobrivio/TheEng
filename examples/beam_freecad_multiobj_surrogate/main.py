@@ -19,8 +19,8 @@ if __name__ == "__main__":
 
         problem = ProblemConstructor()
         problem.setResults({"Disp": "Max", "Stress": "Max", "Length": None})
-        problem.setObjectives(["-Disp", "Stress"])
-        problem.setContraints(["3000 - Length"])
+        problem.setObjectives({"-Disp": 0.5, "Stress": 0.5})
+        problem.setContraints({"3000 - Length": 30})
         problem.setBounds(
             {"Length": (2000, 5000), "Width": (1000, 3000), "Height": (500, 1500)}
         )
@@ -32,7 +32,9 @@ if __name__ == "__main__":
         )
 
         sampler = Sampler(problem, simulator)
-        xSamp, fSamp, dataSamp = sampler.sample(samplerName="latinHypercube", nSamples=20)
+        xSamp, fSamp, dataSamp = sampler.sample(
+            samplerName="latinHypercube", nSamples=20
+        )
 
         surrog = Surrogate(problem, dataSamp)
         surrogate, surrogatePerformance = surrog.generate(
@@ -49,14 +51,7 @@ if __name__ == "__main__":
 
         xOpt, fOpt, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
 
-        ranker = Ranker(
-            problem,
-            concat([dataSamp, dataOpt]),
-            weights=(0.5, 0.5),
-            constraintsRelaxation=[
-                30,
-            ],
-        )
+        ranker = Ranker(problem, concat([dataSamp, dataOpt]))
         dataRanked = ranker.rank(rankingName="simpleAdditive")
 
         print("Ranked results are: \n", dataRanked)
@@ -69,11 +64,12 @@ if __name__ == "__main__":
             yName="Stress",
         )
         visualizer.plot(
-            visualizationName="parallelCoordinate", savePath=join(wd, "parallel_coord.html")
+            visualizationName="parallelCoordinate",
+            savePath=join(wd, "parallel_coord.html"),
         )
         visualizer.plot(visualizationName="heatMap", savePath=join(wd, "heatmap.html"))
 
-    stream = open(join(wd, 'output.txt'), 'w')
+    stream = open(join(wd, "output.txt"), "w")
     results = pstats.Stats(profile, stream=stream)
     results.sort_stats(pstats.SortKey.TIME)
     results.print_stats()
