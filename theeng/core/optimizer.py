@@ -1,20 +1,14 @@
-from multiprocessing import cpu_count
-from multiprocessing.pool import Pool
 from typing import Callable, Dict, Iterable, List, Tuple
 
 from numpy import concatenate
 from pandas import DataFrame
 from pymoo.core.callback import Callback
-from pymoo.core.problem import ElementwiseProblem, StarmapParallelization
+from pymoo.core.problem import ElementwiseProblem
 from pymoo.optimize import minimize
 
 from theeng.algorithms.optimizers import Optimizers
 from theeng.core.abstract import Step
 from theeng.core.problem import ProblemConstructor
-
-n_processes = cpu_count() - 1
-pool = Pool(n_processes)
-runner = StarmapParallelization(pool.starmap)
 
 
 class Optimizer(Step):
@@ -38,7 +32,8 @@ class Optimizer(Step):
                 )
 
         problem = OptimizationProblem(
-            self.problem, self.evaluator, elementwise_runner=runner, elementwise_evaluation=True
+            self.problem,
+            self.evaluator,
         )
         algorithm = self._getMethod(Optimizers, optimizerName)(**kwargs, nObj=self.nObj)
 
