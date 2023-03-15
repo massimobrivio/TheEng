@@ -45,6 +45,8 @@ if __name__ == "__main__":
     )
     dataRanked = ranker.rank(rankingName="simpleAdditive")
 
+    dataRanked.to_csv(join(wd, "db.csv"))
+
     print("Ranked results are: \n", dataRanked)
 
     visualizer = Visualization(dataRanked)
