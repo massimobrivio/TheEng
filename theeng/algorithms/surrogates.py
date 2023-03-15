@@ -62,7 +62,7 @@ class Surrogates:
                 ("scaler", StandardScaler()),
                 (
                     "gauss",
-                    GaussianProcessRegressor(kernel=kernel, n_restarts_optimizer=10, random_state=0),
+                    GaussianProcessRegressor(kernel=kernel, random_state=0),
                 ),
             ]
         )
