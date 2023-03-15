@@ -1,13 +1,15 @@
+import time
 from os import getcwd
 from os.path import join
 
-from theeng.core.optimizer import Optimizer
 from theeng.core.problem import ProblemConstructor
 from theeng.core.ranker import Ranker
 from theeng.core.simulator import Simulator
 from theeng.core.visualization import Visualization
 
 if __name__ == "__main__":
+    from theeng.core.optimizer import Optimizer
+
     wd = join(getcwd(), "examples", "beam_freecad_multiobj")
 
     problem = ProblemConstructor()
@@ -23,11 +25,12 @@ if __name__ == "__main__":
         simulatorName="femSimulator",
         fcdPath=join(wd, "FemCalculixCantilever3D_Param.FCStd"),
     )
-
+    start_time = time.time()
     optimizer = Optimizer(problem, simulator)
     xOpt, fOpt, dataOpt = optimizer.optimize(
-        optimizerName="nsga3", termination=("n_eval", 20), popSize=5
+        optimizerName="nsga3", termination=("n_eval", 40), popSize=10
     )
+    end_time = time.time()
 
     ranker = Ranker(
         problem,
@@ -52,3 +55,5 @@ if __name__ == "__main__":
         visualizationName="parallelCoordinate", savePath=join(wd, "parallel_coord.html")
     )
     visualizer.plot(visualizationName="heatMap", savePath=join(wd, "heatmap.html"))
+
+    print("--- %s seconds ---" % (end_time - start_time))

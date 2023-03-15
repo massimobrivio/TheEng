@@ -1,5 +1,5 @@
 from multiprocessing import cpu_count
-from multiprocessing.pool import ThreadPool
+from multiprocessing.pool import Pool
 from typing import Callable, Dict, Iterable, List, Tuple
 
 from numpy import concatenate
@@ -12,8 +12,8 @@ from theeng.algorithms.optimizers import Optimizers
 from theeng.core.abstract import Step
 from theeng.core.problem import ProblemConstructor
 
-n_threads = cpu_count() - 1
-pool = ThreadPool(n_threads)
+n_processes = cpu_count() - 1
+pool = Pool(n_processes)
 runner = StarmapParallelization(pool.starmap)
 
 
