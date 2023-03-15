@@ -2,6 +2,7 @@ import sys
 from os.path import join
 from os import environ
 from json import dump
+from theeng.theeng import TheEng
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -579,7 +580,7 @@ class App(QDialog):
         self.tabs.addTab(self.surrogateTab, "Surrogate")
         self.tabs.addTab(self.optimizationTab, "Optimisation")
         runButton = QPushButton("Run")
-        runButton.clicked.connect(self._getSettings)
+        runButton.clicked.connect(self._runAnalysis)
 
         mainLayout = QHBoxLayout()
         mainLayout.addWidget(self.sidebar, stretch=3)
@@ -590,9 +591,11 @@ class App(QDialog):
         self.setLayout(mainLayout)
         self.setWindowTitle("The Eng")
         
-    def runAnalysis(self):
+    def _runAnalysis(self):
         settings = self._getSettings()
-        # input settings to The Eng main class
+        analysis = TheEng()
+        analysis.getSettingsFromDict(settings)
+        analysis.run()
 
     def _getSettings(self):
         sideBarSettings = self.sidebar.getSideBarSettings()
