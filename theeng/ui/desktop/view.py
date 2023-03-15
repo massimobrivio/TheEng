@@ -75,6 +75,7 @@ class SideBar(QGroupBox):
         settings = {
             "Working Directory": self.workingDirectoryLine.text(),
             "Simulation Directory": self.simulationDirectoryLine.text(),
+            "Simulator Name": self.simulatorNameLine.currentText(),
             "nCPUs": self.nCpusSpinBox.value(),
         }
         return settings
