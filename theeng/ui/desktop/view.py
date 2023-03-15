@@ -579,7 +579,7 @@ class App(QDialog):
         self.tabs.addTab(self.surrogateTab, "Surrogate")
         self.tabs.addTab(self.optimizationTab, "Optimisation")
         runButton = QPushButton("Run")
-        runButton.clicked.connect(self.getSettings)
+        runButton.clicked.connect(self._getSettings)
 
         mainLayout = QHBoxLayout()
         mainLayout.addWidget(self.sidebar, stretch=3)
@@ -589,15 +589,19 @@ class App(QDialog):
         self.resize(809, 500)
         self.setLayout(mainLayout)
         self.setWindowTitle("The Eng")
+        
+    def runAnalysis(self):
+        settings = self._getSettings()
+        # input settings to The Eng main class
 
-    def getSettings(self):
+    def _getSettings(self):
         sideBarSettings = self.sidebar.getSideBarSettings()
         problemSettings = self.problemTab.getProblemSettings()
         samplingSettings = self.samplingTab.getSamplingSettings()
         surrogateSettings = self.surrogateTab.getSurrogateSettings()
         optimizationSettings = self.optimizationTab.getOptimizationSettings()
 
-        results = {
+        settings = {
             "General Settings": sideBarSettings,
             "Problem": problemSettings,
             "Sampling": samplingSettings,
@@ -606,11 +610,11 @@ class App(QDialog):
         }
 
         with open(join(self.sidebar.getWorkingDirectory(),"input.json"), "w") as outfile:
-            dump(results, outfile)
+            dump(settings, outfile)
 
-        print(results)
+        print(settings)
 
-        return results
+        return settings
 
 
 if __name__ == "__main__":
