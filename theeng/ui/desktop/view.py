@@ -34,6 +34,10 @@ class SideBar(QGroupBox):
         self.simulationDirectoryLabel = QLabel("Simulation Directory")
         self.simulationDirectoryLine = QLineEdit()
         self.simulationDirectoryLine.setPlaceholderText("Enter simulation directory...")
+        
+        self.simulatorNameLabel = QLabel("Simulation Name")
+        self.simulatorNameLine = QComboBox()
+        self.simulatorNameLine.addItems(["femSimulator", "cfdSimulator"])
 
         self.nCpusLabel = QLabel("Number of CPUs")
         self.nCpusSpinBox = QSpinBox()
@@ -54,6 +58,8 @@ class SideBar(QGroupBox):
         sidebarLayout.addWidget(self.workingDirectoryLine)
         sidebarLayout.addWidget(self.simulationDirectoryLabel)
         sidebarLayout.addWidget(self.simulationDirectoryLine)
+        sidebarLayout.addWidget(self.simulatorNameLabel)
+        sidebarLayout.addWidget(self.simulatorNameLine)
         sidebarLayout.addWidget(self.nCpusLabel)
         sidebarLayout.addWidget(self.nCpusSpinBox)
         sidebarLayout.addWidget(self.samplingLabel)
@@ -358,7 +364,10 @@ class ObjectiveDefinition(QGroupBox):
         objectiveNameLine = QLineEdit()
         objectiveNameLine.setPlaceholderText("Enter Objective Expression...")
         objectiveWeightSpinBox = QDoubleSpinBox()
-        objectiveWeightSpinBox.setValue(0.0)
+        objectiveWeightSpinBox.setValue(0.5)
+        objectiveWeightSpinBox.setSingleStep(0.1)
+        objectiveWeightSpinBox.setMaximum(1.0)
+        objectiveWeightSpinBox.setMinimum(0.0)
 
         self.objectiveNameLines.append(objectiveNameLine)
         self.objectiveWeightsSpinBoxes.append(objectiveWeightSpinBox)
@@ -395,11 +404,14 @@ class ObjectiveDefinition(QGroupBox):
         objectiveNameLine = QLineEdit()
         objectiveNameLine.setPlaceholderText("Enter Objective Expression...")
         objectiveWeightSpinBox = QDoubleSpinBox()
-        objectiveWeightSpinBox.setValue(0.0)
+        objectiveWeightSpinBox.setValue(0.5)
+        objectiveWeightSpinBox.setSingleStep(0.1)
+        objectiveWeightSpinBox.setMaximum(1.0)
+        objectiveWeightSpinBox.setMinimum(0.0)
 
         self.objectiveNameLines.append(objectiveNameLine)
         self.objectiveWeightsSpinBoxes.append(objectiveWeightSpinBox)
-
+        
         self.objectiveSettingsLayout.addWidget(
             self.objectiveNameLines[-1], self.addClicked + 1, 0
         )
