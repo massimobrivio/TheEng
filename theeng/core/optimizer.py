@@ -10,6 +10,13 @@ from theeng.algorithms.optimizers import Optimizers
 from theeng.core.abstract import Step
 from theeng.core.problem import ProblemConstructor
 
+from multiprocessing.pool import ThreadPool
+from pymoo.core.problem import StarmapParallelization
+
+n_threads = 4
+pool = ThreadPool(n_threads)
+runner = StarmapParallelization(pool.starmap)
+
 
 class Optimizer(Step):
     def __init__(
@@ -31,7 +38,7 @@ class Optimizer(Step):
                     "Only NSGA3 is supported for multi-objective optimization. Use nsga3 name."
                 )
 
-        problem = OptimizationProblem(self.problem, self.evaluator)
+        problem = OptimizationProblem(self.problem, self.evaluator, elementwise_runner=runner)
         algorithm = self._getMethod(Optimizers, optimizerName)(**kwargs, nObj=self.nObj)
 
         res = minimize(
@@ -105,6 +112,7 @@ class OptimizationProblem(ElementwiseProblem):
         self,
         problem: ProblemConstructor,
         evaluator: Callable[[Dict[str, float]], Dict[str, float]],
+        **kwargs
     ):
         """Initialize the optimization problem.
 
