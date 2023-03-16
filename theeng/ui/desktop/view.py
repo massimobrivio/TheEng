@@ -35,7 +35,7 @@ class SideBar(QGroupBox):
         self.simulationDirectoryLabel = QLabel("Simulation Directory")
         self.simulationDirectoryLine = QLineEdit()
         self.simulationDirectoryLine.setPlaceholderText("Enter simulation directory...")
-        
+
         self.simulatorNameLabel = QLabel("Simulation Name")
         self.simulatorNameLine = QComboBox()
         self.simulatorNameLine.addItems(["femSimulator", "cfdSimulator"])
@@ -197,7 +197,7 @@ class ResultsDefinition(QGroupBox):
         resultNameLabel = QLabel("Result Name")
         resultNameLine = QLineEdit()
         resultNameLine.setPlaceholderText("Enter Result name...")
-        
+
         resultOperationLabel = QLabel("Operation")
         resultOperationComboBox = QComboBox()
         resultOperationComboBox.addItems(["None", "Max", "Min", "Avg"])
@@ -235,10 +235,10 @@ class ResultsDefinition(QGroupBox):
         resultNameLine.setPlaceholderText("Enter Result name...")
         resultOperationComboBox = QComboBox()
         resultOperationComboBox.addItems(["None", "Max", "Min", "Avg"])
-        
+
         self.resultNameLines.append(resultNameLine)
         self.resultOperationComboBoxes.append(resultOperationComboBox)
-        
+
         self.resultSettingsLayout.addWidget(self.resultNameLines[-1], self.addClicked + 1, 0)
         self.resultSettingsLayout.addWidget(self.resultOperationComboBoxes[-1], self.addClicked + 1, 1)
         self.addClicked += 1
@@ -413,7 +413,7 @@ class ObjectiveDefinition(QGroupBox):
 
         self.objectiveNameLines.append(objectiveNameLine)
         self.objectiveWeightsSpinBoxes.append(objectiveWeightSpinBox)
-        
+
         self.objectiveSettingsLayout.addWidget(
             self.objectiveNameLines[-1], self.addClicked + 1, 0
         )
@@ -439,7 +439,7 @@ class ObjectiveDefinition(QGroupBox):
             self.objectiveWeightsSpinBoxes,
         ):
             results[objectiveNameLine.text()] = objectiveWeightSpinBox.value()
-            
+
         return results
 
 
@@ -451,7 +451,7 @@ class ConstraintsDefinition(QGroupBox):
 
         constraintNameLabel = QLabel("Constraints Expression")
         constraintRelaxationLabel = QLabel("Constraints Relaxation")
-        
+
         constraintNameLine = QLineEdit()
         constraintNameLine.setPlaceholderText("Enter Constraints expression...")
         constraintRelaxationSpinBox = QDoubleSpinBox()
@@ -463,7 +463,7 @@ class ConstraintsDefinition(QGroupBox):
         self.constraintSettingsLayout = QGridLayout()
         self.constraintSettingsLayout.addWidget(constraintNameLabel, 0, 0)
         self.constraintSettingsLayout.addWidget(constraintRelaxationLabel, 0, 1)
-        
+
         self.constraintSettingsLayout.addWidget(self.constraintNameLines[0], 1, 0)
         self.constraintSettingsLayout.addWidget(self.constraintRelaxationSpinBoxes[0], 1, 1)
 
@@ -491,12 +491,12 @@ class ConstraintsDefinition(QGroupBox):
         constraintNameLine.setPlaceholderText("Enter Constraints expression...")
         constraintRelaxationSpinBox = QDoubleSpinBox()
         constraintRelaxationSpinBox.setValue(0.0)
-        
+
         self.constraintNameLines.append(constraintNameLine)
         self.constraintRelaxationSpinBoxes.append(constraintRelaxationSpinBox)
         self.constraintSettingsLayout.addWidget(self.constraintNameLines[-1])
         self.constraintSettingsLayout.addWidget(self.constraintRelaxationSpinBoxes[-1])
-        
+
         self.addClicked += 1
 
     def removeRow(self):
@@ -504,7 +504,7 @@ class ConstraintsDefinition(QGroupBox):
         self.constraintSettingsLayout.removeWidget(self.constraintRelaxationSpinBoxes[-1])
         self.constraintNameLines.pop()
         self.constraintRelaxationSpinBoxes.pop()
-        
+
         self.addClicked -= 1
 
     def getConstraintSettings(self):
@@ -519,6 +519,7 @@ class OptimizationTab(QWidget):
         super().__init__()
         self.objectiveDefinition = ObjectiveDefinition()
         self.constraintDefinition = ConstraintsDefinition()
+
         self.methodLabel = QLabel("Optimization Algorithm")
         self.methodComboBox = QComboBox()
         self.methodComboBox.addItems(
@@ -527,18 +528,27 @@ class OptimizationTab(QWidget):
         self.popSizeLabel = QLabel("Population Size")
         self.popSizeSpinBox = QSpinBox()
         self.popSizeSpinBox.setValue(5)
+
         self.nEvaluationsLabel = QLabel("Number of Evaluations")
         self.nEvaluationsSpinBox = QSpinBox()
         self.nEvaluationsSpinBox.setValue(10)
+
+        self.rankingLabel = QLabel("Ranking Method")
+        self.rankingComboBox = QComboBox()
+        self.rankingComboBox.addItems(["simpleAdditive", "topsis"])
+
         verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  # type: ignore
 
         optimizationSettingsLayout = QGridLayout()
         optimizationSettingsLayout.addWidget(self.methodLabel, 0, 0)
         optimizationSettingsLayout.addWidget(self.popSizeLabel, 0, 1)
         optimizationSettingsLayout.addWidget(self.nEvaluationsLabel, 0, 2)
+        optimizationSettingsLayout.addWidget(self.rankingLabel, 0, 3)
+
         optimizationSettingsLayout.addWidget(self.methodComboBox, 1, 0)
         optimizationSettingsLayout.addWidget(self.popSizeSpinBox, 1, 1)
         optimizationSettingsLayout.addWidget(self.nEvaluationsSpinBox, 1, 2)
+        optimizationSettingsLayout.addWidget(self.rankingComboBox, 1, 3)
 
         box = QGroupBox()
         box.setTitle("Optimization Settings")
@@ -559,6 +569,7 @@ class OptimizationTab(QWidget):
             "Method": self.methodComboBox.currentText(),
             "Population Size": self.popSizeSpinBox.value(),
             "Number of Evaluations": self.nEvaluationsSpinBox.value(),
+            "Ranking Method": self.rankingComboBox.currentText(),
             "Objectives Expressions": objectiveParameters,
             "Constraints Expressions": constraintsParameters
         }
@@ -590,12 +601,12 @@ class App(QDialog):
         self.resize(809, 500)
         self.setLayout(mainLayout)
         self.setWindowTitle("The Eng")
-        
+
     def _runAnalysis(self):
         settings = self._getSettings()
-        analysis = TheEng()
-        analysis.getSettingsFromDict(settings)
-        analysis.run()
+        # analysis = TheEng()
+        # analysis.getSettingsFromDict(settings)
+        # analysis.run()
 
     def _getSettings(self):
         sideBarSettings = self.sidebar.getSideBarSettings()
