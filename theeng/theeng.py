@@ -37,6 +37,7 @@ class TheEng:
         self.optimizerName = ""
         self.popSize = None
         self.termination = None
+        self.rankingName = ""
         self.objectives = None
         self.objectiveWeights = None
         self.constraints = None
@@ -58,7 +59,7 @@ class TheEng:
             simulatorName=self.simulatorName,
             fcdPath=self.simulationDirectory,
         )
-        
+
         if self.makeSampling:
             sampler = Sampler(problem, simulator)
             _, _, dataSamp = sampler.sample(nSamples=self.nSamples)
@@ -71,7 +72,7 @@ class TheEng:
                 degree_fit=self.degree_fit,
                 surrogatePath=join(self.workingDirectory, "surrogate.pkl"),
             )
-        
+
         if self.makeOptimization:
             optimizer = Optimizer(problem, surrogate)
             xOpt, _, dataOpt = optimizer.optimize(
@@ -79,21 +80,21 @@ class TheEng:
             )
             if self.makeSurrogate:
                 _, _, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
-        
+
         if self.makeSampling and self.makeOptimization:
-            data = concat([dataSamp, dataOpt]) 
+            data = concat([dataSamp, dataOpt])
         elif self.makeSampling:
             data = dataSamp
         elif self.makeOptimization:
             data = dataOpt
-        
+
         ranker = Ranker(problem, data)
-        dataRanked = ranker.rank(rankingName="simpleAdditive")
+        dataRanked = ranker.rank(rankingName=self.rankingName)
 
         dataRanked.to_csv(join(self.workingDirectory, "db.csv"))
 
         visualizer = Visualization(dataRanked)
-        
+
         visualizer.plot(
             visualizationName="parallelCoordinate",
             savePath=join(self.workingDirectory, "parallel_coord.html"),
@@ -154,6 +155,7 @@ class TheEng:
         self.popSize = optimizationSettings["Population Size"]
         n_eval = optimizationSettings["Number of Evaluations"]
         self.termination = ("n_eval", n_eval)
+        self.rankingName = optimizationSettings["Ranking Method"]
         self.objectives = optimizationSettings["Objectives Expressions"]
         self.constraints = optimizationSettings["Constraints Expressions"]
 

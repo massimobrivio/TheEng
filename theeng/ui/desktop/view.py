@@ -102,8 +102,10 @@ class ParametersDefinition(QGroupBox):
         parameterNameLine.setPlaceholderText("Enter parameter name...")
         lowerBoundDoubleSpinBox = QDoubleSpinBox()
         lowerBoundDoubleSpinBox.setValue(0.0)
+        lowerBoundDoubleSpinBox.setRange(-1e20, 1e20)
         upperBoundDoubleSpinBox = QDoubleSpinBox()
         upperBoundDoubleSpinBox.setValue(0.0)
+        upperBoundDoubleSpinBox.setRange(-1e20, 1e20)
 
         self.parameterNameLines.append(parameterNameLine)
         self.lowerBoundDoubleSpinBoxes.append(lowerBoundDoubleSpinBox)
@@ -144,8 +146,10 @@ class ParametersDefinition(QGroupBox):
         parameterNameLine.setPlaceholderText("Enter parameter name...")
         lowerBoundDoubleSpinBox = QDoubleSpinBox()
         lowerBoundDoubleSpinBox.setValue(0.0)
+        lowerBoundDoubleSpinBox.setRange(-1e20, 1e20)
         upperBoundDoubleSpinBox = QDoubleSpinBox()
         upperBoundDoubleSpinBox.setValue(0.0)
+        upperBoundDoubleSpinBox.setRange(-1e20, 1e20)
 
         self.parameterNameLines.append(parameterNameLine)
         self.lowerBoundDoubleSpinBoxes.append(lowerBoundDoubleSpinBox)
@@ -286,6 +290,7 @@ class SamplingTab(QWidget):
         self.nSamplesLabel = QLabel("Number of Samples")
         self.nSamplesSpinBox = QSpinBox()
         self.nSamplesSpinBox.setValue(50)
+        self.nSamplesSpinBox.setRange(1, 10000)
         verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  # type: ignore
 
         mainLayout = QVBoxLayout()
@@ -368,8 +373,7 @@ class ObjectiveDefinition(QGroupBox):
         objectiveWeightSpinBox = QDoubleSpinBox()
         objectiveWeightSpinBox.setValue(0.5)
         objectiveWeightSpinBox.setSingleStep(0.1)
-        objectiveWeightSpinBox.setMaximum(1.0)
-        objectiveWeightSpinBox.setMinimum(0.0)
+        objectiveWeightSpinBox.setRange(0., 1.0)
 
         self.objectiveNameLines.append(objectiveNameLine)
         self.objectiveWeightsSpinBoxes.append(objectiveWeightSpinBox)
@@ -408,8 +412,7 @@ class ObjectiveDefinition(QGroupBox):
         objectiveWeightSpinBox = QDoubleSpinBox()
         objectiveWeightSpinBox.setValue(0.5)
         objectiveWeightSpinBox.setSingleStep(0.1)
-        objectiveWeightSpinBox.setMaximum(1.0)
-        objectiveWeightSpinBox.setMinimum(0.0)
+        objectiveWeightSpinBox.setRange(0., 1.0)
 
         self.objectiveNameLines.append(objectiveNameLine)
         self.objectiveWeightsSpinBoxes.append(objectiveWeightSpinBox)
@@ -455,7 +458,8 @@ class ConstraintsDefinition(QGroupBox):
         constraintNameLine = QLineEdit()
         constraintNameLine.setPlaceholderText("Enter Constraints expression...")
         constraintRelaxationSpinBox = QDoubleSpinBox()
-        constraintRelaxationSpinBox.setValue(0.0)
+        constraintRelaxationSpinBox.setValue(10)
+        constraintRelaxationSpinBox.setRange(0., 100)
 
         self.constraintNameLines.append(constraintNameLine)
         self.constraintRelaxationSpinBoxes.append(constraintRelaxationSpinBox)
@@ -490,7 +494,8 @@ class ConstraintsDefinition(QGroupBox):
         constraintNameLine = QLineEdit()
         constraintNameLine.setPlaceholderText("Enter Constraints expression...")
         constraintRelaxationSpinBox = QDoubleSpinBox()
-        constraintRelaxationSpinBox.setValue(0.0)
+        constraintRelaxationSpinBox.setValue(10.)
+        constraintRelaxationSpinBox.setRange(0., 100)
 
         self.constraintNameLines.append(constraintNameLine)
         self.constraintRelaxationSpinBoxes.append(constraintRelaxationSpinBox)
@@ -528,10 +533,12 @@ class OptimizationTab(QWidget):
         self.popSizeLabel = QLabel("Population Size")
         self.popSizeSpinBox = QSpinBox()
         self.popSizeSpinBox.setValue(5)
+        self.popSizeSpinBox.setRange(1, 500)
 
         self.nEvaluationsLabel = QLabel("Number of Evaluations")
         self.nEvaluationsSpinBox = QSpinBox()
         self.nEvaluationsSpinBox.setValue(10)
+        self.nEvaluationsSpinBox.setRange(1, 100000)
 
         self.rankingLabel = QLabel("Ranking Method")
         self.rankingComboBox = QComboBox()
@@ -604,9 +611,9 @@ class App(QDialog):
 
     def _runAnalysis(self):
         settings = self._getSettings()
-        # analysis = TheEng()
-        # analysis.getSettingsFromDict(settings)
-        # analysis.run()
+        analysis = TheEng()
+        analysis.getSettingsFromDict(settings)
+        analysis.run()
 
     def _getSettings(self):
         sideBarSettings = self.sidebar.getSideBarSettings()
