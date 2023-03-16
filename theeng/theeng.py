@@ -135,7 +135,11 @@ class TheEng:
     def _getProblemSettings(self):
         problemSettings = self._settings["Problem"]
         self.bounds = problemSettings["Parameters"]
-        self.results = problemSettings["Results"]
+        self.results = {}
+        for resultName, resultOperation in problemSettings["Results"].items():
+            if resultOperation == "None":
+                resultOperation = None
+            self.results[resultName] = resultOperation
 
     def _getSamplingSettings(self):
         samplingSettings = self._settings["Sampling"]
