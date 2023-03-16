@@ -14,11 +14,10 @@ from theeng.core.visualization import Visualization
 
 class TheEng:
     def __init__(
-        self, makeSampling=True, makeSurrogate=True, makeOptimization=True
+        self
     ) -> None:
-        self.makeSampling = makeSampling
-        self.makeSurrogate = makeSurrogate
-        self.makeOptimization = makeOptimization
+
+        self.makeSurrogate = None
 
         self.settingsReady = False
 
@@ -49,10 +48,10 @@ class TheEng:
                 "Settings are not ready. Please run getSettingsFromDict() or getSettingsFromJson() method first."
             )
         problem = ProblemConstructor()
-        problem.setResults(self.results)
-        problem.setObjectives(self.objectives)
-        problem.setContraints(self.constraints)
-        problem.setBounds(self.bounds)
+        problem.setResults(self.results)  # type: ignore
+        problem.setObjectives(self.objectives)  # type: ignore
+        problem.setContraints(self.constraints)  # type: ignore
+        problem.setBounds(self.bounds)  # type: ignore
 
         simul = Simulator(problem)
         simulator = simul.generate(
@@ -60,32 +59,30 @@ class TheEng:
             fcdPath=self.simulationDirectory,
         )
 
-        if self.makeSampling:
-            sampler = Sampler(problem, simulator)
-            _, _, dataSamp = sampler.sample(nSamples=self.nSamples)
+        evaluator = simulator
 
-        if self.makeSurrogate and self.makeSampling:
-            surrog = Surrogate(problem, dataSamp)
+        if self.makeSurrogate:
+            sampler = Sampler(problem, simulator)
+            _, _, dataSamp = sampler.sample(nSamples=self.nSamples)  # type: ignore
+
+            surrog = Surrogate(problem, dataSamp)  # type: ignore
             surrogate, _ = surrog.generate(
                 surrogateName=self.surrogateName,
                 save=True,
                 degree_fit=self.degree_fit,
                 surrogatePath=join(self.workingDirectory, "surrogate.pkl"),
             )
+            evaluator = surrogate
 
-        if self.makeOptimization:
-            optimizer = Optimizer(problem, surrogate)
-            xOpt, _, dataOpt = optimizer.optimize(
-                optimizerName=self.optimizerName, termination=self.termination, popSize=self.popSize
-            )
-            if self.makeSurrogate:
-                _, _, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
+        optimizer = Optimizer(problem, evaluator)
+        xOpt, _, dataOpt = optimizer.optimize(
+            optimizerName=self.optimizerName, termination=self.termination, popSize=self.popSize  # type: ignore
+        )
 
-        if self.makeSampling and self.makeOptimization:
+        if self.makeSurrogate:
+            _, _, dataOpt = optimizer.convertToSimulator(xOpt, simulator)
             data = concat([dataSamp, dataOpt])
-        elif self.makeSampling:
-            data = dataSamp
-        elif self.makeOptimization:
+        else:
             data = dataOpt
 
         ranker = Ranker(problem, data)
@@ -115,13 +112,10 @@ class TheEng:
 
         self._getGeneralSettings()
         self._getProblemSettings()
-
-        if self.makeSampling:
-            self._getSamplingSettings()
         if self.makeSurrogate:
+            self._getSamplingSettings()
             self._getSurrogateSettings()
-        if self.makeOptimization:
-            self._getOptimizationSettings()
+        self._getOptimizationSettings()
 
         self.settingsReady = True
 
@@ -130,6 +124,7 @@ class TheEng:
         self.workingDirectory = generalSettings["Working Directory"]
         self.simulationDirectory = generalSettings["Simulation Directory"]
         self.simulatorName = generalSettings["Simulator Name"]
+        self.makeSurrogate = generalSettings["Use Surrogate"]
         self.nCPUs = generalSettings["nCPUs"]
 
     def _getProblemSettings(self):

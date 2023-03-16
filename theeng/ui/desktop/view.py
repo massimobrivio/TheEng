@@ -44,10 +44,6 @@ class SideBar(QGroupBox):
         self.nCpusSpinBox = QSpinBox()
         self.nCpusSpinBox.setValue(2)
 
-        self.samplingLabel = QLabel("Enable Sampling")
-        self.samplingCheckBox = QCheckBox()
-        self.samplingCheckBox.setChecked(True)
-
         self.surrogateLabel = QLabel("Enable Surrogate")
         self.surrogateCheckBox = QCheckBox()
         self.surrogateCheckBox.setChecked(True)
@@ -63,8 +59,6 @@ class SideBar(QGroupBox):
         sidebarLayout.addWidget(self.simulatorNameLine)
         sidebarLayout.addWidget(self.nCpusLabel)
         sidebarLayout.addWidget(self.nCpusSpinBox)
-        sidebarLayout.addWidget(self.samplingLabel)
-        sidebarLayout.addWidget(self.samplingCheckBox)
         sidebarLayout.addWidget(self.surrogateLabel)
         sidebarLayout.addWidget(self.surrogateCheckBox)
         sidebarLayout.addSpacerItem(verticalSpacer)
@@ -77,6 +71,7 @@ class SideBar(QGroupBox):
             "Working Directory": self.workingDirectoryLine.text(),
             "Simulation Directory": self.simulationDirectoryLine.text(),
             "Simulator Name": self.simulatorNameLine.currentText(),
+            "Use Surrogate": self.surrogateCheckBox.isChecked(),
             "nCPUs": self.nCpusSpinBox.value(),
         }
         return settings
@@ -611,9 +606,13 @@ class App(QDialog):
 
     def _runAnalysis(self):
         settings = self._getSettings()
-        analysis = TheEng()
-        analysis.getSettingsFromDict(settings)
-        analysis.run()
+        try:
+            analysis = TheEng()
+            analysis.getSettingsFromDict(settings)
+            analysis.run()
+        except Exception as e:
+            print("Analysis failed.")
+            print(e)
 
     def _getSettings(self):
         sideBarSettings = self.sidebar.getSideBarSettings()
