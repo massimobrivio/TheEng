@@ -257,6 +257,55 @@ class ConstraintDefinition(Group):
         return results
 
 
+# class SamplingDefinition(Group):
+#     def __init__(
+#         self,
+#         title="Sampling Settings",
+#         labels=[
+#             "Sampling Method",
+#             "Number of Samples"
+#         ],
+#         isDynamic=False,
+#     ):
+#         super().__init__(title, labels, isDynamic)
+
+#     def setWidgetList(self) -> List[QWidget]:
+#         methodComboBox = QComboBox()
+#         methodComboBox.addItems(["latinHypercube", "random"])
+#         nSamplesSpinBox = QSpinBox()
+#         nSamplesSpinBox.setValue(50)
+#         nSamplesSpinBox.setRange(1, 10000)
+#         return [methodComboBox, nSamplesSpinBox]
+
+#     def getSettings(self) -> Dict:
+#         results = {}
+#         for methodComboBox, nSamplesSpinBox in self.groupList[1:]:
+#             results[methodComboBox.currentText()] = nSamplesSpinBox.value()
+#         return results
+
+#     def addRow(self):
+#         pass
+
+#     def removeRow(self):
+#         pass
+
+
+# class SamplingTab(QWidget):
+#     def __init__(self):
+#         super().__init__()
+#         self.samplingDefinition = SamplingDefinition()
+#         verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)  # type: ignore
+
+#         mainLayout = QVBoxLayout()
+#         mainLayout.addWidget(self.samplingDefinition)
+#         mainLayout.addSpacerItem(verticalSpacer)
+
+#         self.setLayout(mainLayout)
+
+#     def getSettings(self):
+#         return self.samplingDefinition.getSettings()
+
+
 class ProblemTab(QWidget):
     def __init__(self):
         super().__init__()
@@ -445,13 +494,13 @@ class App(QDialog):
 
     def _runAnalysis(self):
         settings = self._getSettings()
-        # try:
-        #     analysis = TheEng()
-        #     analysis.getSettingsFromDict(settings)
-        #     analysis.run()
-        # except Exception as e:
-        #     print("Analysis failed.")
-        #     print(e)
+        try:
+            analysis = TheEng()
+            analysis.getSettingsFromDict(settings)
+            analysis.run()
+        except Exception as e:
+            print("Analysis failed.")
+            print(e)
 
     def _getSettings(self):
         sideBarSettings = self.sidebar.getSideBarSettings()
