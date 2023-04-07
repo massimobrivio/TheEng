@@ -22,5 +22,5 @@ setup(
 )
 
 # 1 python setup.py sdist bdist
-# 2 twine upload --repository testpypi dist/*
-# 3 twine upload dist/* --> only for final release
+# 2 twine upload --repository testpypi dist/theeng-1.0.tar.gz
+# 3 twine upload dist/theeng-1.0.tar.gz --> only for final release
