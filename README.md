@@ -19,7 +19,7 @@ The library automates:
 TheEng is available on Pypi.
 
 ```bash
-pip install -U TheEng
+pip install -U theeng
 ```
 
 ## Usage
