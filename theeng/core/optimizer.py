@@ -147,7 +147,15 @@ class OptimizationProblem(ElementwiseProblem):
         parameters = {name: value for name, value in zip(self._pnames, x)}
         results = self._evaluator(parameters)
 
-        f = [obj(results) for obj in self._objectives]
+        """
+            Here we could evaluate the expected improvement instead of the objective function if we want to do Bayesian optimization.
+            We could implement a new method that evaluates the expected improvement and pass it to the optimizer if we pass a Gaussian process model. as evaluator.
+            - How to let the optimizer know that we are passing a Gaussian process surrogate as evaluator?
+        
+        """ 
+
+        
+        f = [obj(results) for obj in self._objectives]  
         g = [constr(results) for constr in self._constraints]
         r = list(results.values())
 
